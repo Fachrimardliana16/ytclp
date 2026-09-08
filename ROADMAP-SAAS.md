@@ -83,18 +83,18 @@ GET  /api/usage             → Check credit usage
 
 ---
 
-## Phase 3: AI Features (Week 5-6) 🔄 PARTIAL
+## Phase 3: AI Features (Week 5-6) ✅ DONE
 
 ### Goal
 AI-powered highlight detection + smart captions.
 
 ### Tasks
-- [ ] AI highlight scoring (ganti keyword-based → LLM scoring)
-- [ ] Auto title generation (clickbait-worthy)
-- [ ] Auto caption styling (font, color, animation)
+- [x] AI highlight scoring (OpenRouter LLM) — `ai/openrouter.js`
+- [x] Auto title generation (clickbait/professional/funny/viral) — `ai/routes.js`
+- [x] Auto caption styling (font, color, animation) — `ai/routes.js`
 - [ ] Smart crop (detect face/subject, auto-center)
 - [x] Bilingual caption (id + en auto-detect) — `transcript.py`
-- [ ] Caption template library (10+ styles)
+- [x] Caption template library (10+ styles) — `templates/presets.js`
 
 ### AI Integration
 ```
@@ -112,7 +112,7 @@ POST /api/ai/smart-crop     → Detect subject for crop
 
 ---
 
-## Phase 4: Template & Branding (Week 7-8)
+## Phase 4: Template & Branding (Week 7-8) ✅ PARTIAL
 
 ### Goal
 User bisa customize output sesuai brand.
@@ -121,10 +121,11 @@ User bisa customize output sesuai brand.
 - [ ] Template editor (drag-drop layout)
 - [ ] Custom watermark upload
 - [ ] Brand kit (logo, colors, fonts)
-- [ ] Caption presets (TikTok, Reels, Shorts styles)
-- [ ] Export format options (MP4, GIF, WebM)
-- [ ] Resolution picker (720p, 1080p, 4K)
-- [ ] Batch export (multi-clip download as ZIP)
+- [x] Caption presets (10+ styles) — `templates/presets.js`
+- [x] Export format options (MP4, WebM) — `templates/presets.js`
+- [x] Resolution picker (720p, 1080p, 4K) — `templates/presets.js`
+- [x] Platform presets (TikTok, Reels, Shorts) — `templates/presets.js`
+- [x] Batch export (ZIP) — `server.js` `/api/job/zip`
 
 ### Template System
 ```
