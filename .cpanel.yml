@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/$USER/app/
+    - /bin/cp -R * $DEPLOYPATH
+    - cd $DEPLOYPATH
+    - /usr/bin/npm install --production

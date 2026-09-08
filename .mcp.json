@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "yt-clipper": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {}
+    }
+  }
+}

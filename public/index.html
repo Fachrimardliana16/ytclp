@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Clipper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class'}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',system-ui,sans-serif}
+    ::selection{background:#ef4444;color:#fff}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .fade-in{animation:fadeIn .3s ease}
+    .slide-up{animation:slideUp .2s ease}
+  </style>
+</head>
+<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen">
+
+<!-- Header -->
+<header class="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 backdrop-blur sticky top-0 z-40">
+  <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-red-500 text-white grid place-items-center text-sm font-bold">YC</div>
+      <span class="font-bold text-lg tracking-tight">YT Clipper</span>
+    </div>
+    <button onclick="toggleTheme()" class="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 grid place-items-center text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 transition">🌓</button>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+
+  <!-- URL Input -->
+  <div class="flex gap-2">
+    <input id="urlInput" type="text" placeholder="Paste YouTube URL..." onkeydown="if(event.key==='Enter')analyze()"
+      class="flex-1 h-12 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-mono outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition">
+    <button id="btnAnalyze" onclick="analyze()" class="h-12 px-6 rounded-xl bg-red-500 text-white text-sm font-semibold cursor-pointer hover:bg-red-600 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+      <span id="analyzeSpinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-[spin_.6s_linear_infinite]"></span>
+      <span id="analyzeLabel">Analisa</span>
+    </button>
+  </div>
+
+  <!-- Options -->
+  <div class="flex items-center gap-4 text-sm">
+    <label class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+      Durasi
+      <select id="optDuration" class="h-8 px-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-mono outline-none">
+        <option value="15">15d</option><option value="30" selected>30d</option><option value="45">45d</option><option value="60">60d</option>
+      </select>
+    </label>
+    <label class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+      Jumlah
+      <select id="optCount" class="h-8 px-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-mono outline-none">
+        <option value="5">5</option><option value="8" selected>8</option><option value="10">10</option><option value="15">15</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- Status -->
+  <div id="statusBar" class="hidden">
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm text-zinc-600 dark:text-zinc-400 fade-in">
+      <div id="statusDot" class="w-2 h-2 rounded-full shrink-0"></div>
+      <span id="statusText"></span>
+    </div>
+  </div>
+
+  <!-- Workspace -->
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5">
+    <!-- Player -->
+    <div id="playerWrap" class="relative w-full pt-[56.25%] bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
+      <div class="absolute inset-0 flex flex-col items-center justify-center text-zinc-500 gap-3">
+        <div class="text-4xl opacity-30">&#9654;</div>
+        <span class="text-sm">Paste URL YouTube untuk memulai</span>
+      </div>
+    </div>
+    <!-- Info Panel -->
+    <div id="infoPanel" class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 space-y-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Info Video</div>
+      <div class="text-sm text-zinc-400 text-center py-6">Menunggu analisa...</div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div id="timelineSection" class="hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 fade-in">
+    <div class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-3">Timeline</div>
+    <div id="tBar" class="relative h-10 bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
+      <div id="tReg" class="absolute inset-0 pointer-events-none"></div>
+    </div>
+    <div id="tTick" class="flex justify-between mt-2"></div>
+  </div>
+
+  <!-- Clips -->
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Clips</span>
+        <span id="cCount" class="text-xs text-zinc-400 font-mono">—</span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="selectAll()" class="h-8 px-3 rounded-lg text-xs font-medium border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">Semua</button>
+        <button onclick="downloadSelected()" class="h-8 px-3 rounded-lg text-xs font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 cursor-pointer hover:opacity-90 transition">Download</button>
+        <button onclick="exportSelected()" class="h-8 px-3 rounded-lg text-xs font-medium bg-red-500 text-white cursor-pointer hover:bg-red-600 transition">Export</button>
+      </div>
+    </div>
+    <div id="cList" class="p-2">
+      <div class="text-center py-16 text-zinc-400 text-sm">Paste URL YouTube, klik <strong>Analisa</strong>.</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Download Popover -->
+<div id="dlPopover" class="fixed z-50 hidden slide-up">
+  <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-1.5 min-w-[160px] shadow-xl">
+    <div class="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Download</div>
+    <button onclick="downloadFromPopover('landscape')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 transition text-left">Landscape</button>
+    <button onclick="downloadFromPopover('portrait')" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 transition text-left">Portrait</button>
+  </div>
+</div>
+
+<!-- Modal Preview -->
+<div id="modalOverlay" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm grid place-items-center p-4" onclick="if(event.target===this)closeModal()">
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative slide-up">
+    <button onclick="closeModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 border-none text-white text-sm grid place-items-center z-10 cursor-pointer hover:bg-black/70 transition">✕</button>
+    <div id="modalPlayer" class="relative w-full pt-[56.25%] bg-zinc-900 rounded-t-2xl overflow-hidden">
+      <iframe id="modalIframe" class="absolute inset-0 w-full h-full border-none" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="p-5 space-y-4">
+      <div>
+        <div class="font-bold text-base" id="modalTitle"></div>
+        <div class="text-sm text-zinc-400 font-mono mt-0.5" id="modalMeta"></div>
+      </div>
+      <div class="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4">
+        <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-2">Dari Transcript</div>
+        <div id="autoPreview" class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed space-y-1"></div>
+      </div>
+      <!-- Format + Subtitle -->
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1">
+          <button id="btnLandscape" onclick="setFormat('landscape')" class="h-8 px-3 rounded-md text-xs font-medium bg-white dark:bg-zinc-700 shadow-sm cursor-pointer transition">Landscape</button>
+          <button id="btnPortrait" onclick="setFormat('portrait')" class="h-8 px-3 rounded-md text-xs font-medium text-zinc-500 cursor-pointer transition">Portrait</button>
+        </div>
+        <label class="flex items-center gap-2 cursor-pointer text-sm text-zinc-500 select-none">
+          <input type="checkbox" id="chkSubtitles" checked class="accent-red-500 w-3.5 h-3.5 rounded">
+          Auto Subtitle
+        </label>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="exportFromModal()" class="h-10 px-5 rounded-xl bg-red-500 text-white text-sm font-semibold cursor-pointer hover:bg-red-600 transition">Export &amp; Save</button>
+        <button onclick="copyFromModal()" class="h-10 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-medium cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">Copy URL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analyze Overlay -->
+<div id="analyzeOverlay" class="fixed inset-0 z-[60] hidden bg-black/50 backdrop-blur-md items-center justify-center flex-col gap-4">
+  <div class="w-12 h-12 border-[3px] border-white/10 border-t-red-500 rounded-full animate-[spin_.7s_linear_infinite]"></div>
+  <div class="text-sm font-medium text-white" id="analyzeText">Menganalisa...</div>
+  <div class="text-xs text-zinc-400" id="analyzeSubtext">Mengambil transcript</div>
+</div>
+
+<!-- Progress Overlay -->
+<div id="progressOverlay" class="fixed inset-0 z-[70] hidden bg-black/50 backdrop-blur-md items-center justify-center">
+  <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-8 py-7 min-w-[320px] text-center shadow-2xl slide-up">
+    <div class="text-sm font-semibold mb-1" id="progressTitle">Mendownload...</div>
+    <div class="text-xs text-zinc-400 font-mono truncate max-w-[260px] mx-auto mb-5" id="progressSubtitle"></div>
+    <div class="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+      <div id="progressFill" class="h-full w-0 bg-gradient-to-r from-red-500 to-orange-500 rounded-full transition-[width] duration-300"></div>
+    </div>
+    <div class="text-3xl font-extrabold font-mono text-red-500 mt-3 tabular-nums" id="progressPercent">0%</div>
+    <div class="text-xs text-zinc-400 mt-1" id="progressStatus">Menyiapkan...</div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-20 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl px-5 py-2.5 text-sm font-medium shadow-xl opacity-0 transition-all duration-300 z-[80] pointer-events-none whitespace-nowrap"></div>
+
+<script>
+let vid=null,clips=[],selectedClips=new Set(),videoTranscript=[];
+let popoverClipIdx=null,currentClipIdx=null,currentFormat='landscape';
+
+function toggleTheme(){document.documentElement.classList.toggle('dark');document.documentElement.classList.toggle('light')}
+function toast(m){const e=document.getElementById('toast');e.innerHTML=m;e.style.opacity='1';e.style.transform='translateX(-50%) translateY(0)';clearTimeout(e._t);e._t=setTimeout(()=>{e.style.opacity='0';e.style.transform='translateX(-50%) translateY(20px)'},2500)}
+function extractId(u){for(const p of[/youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,/youtu\.be\/([a-zA-Z0-9_-]{11})/,/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,/^([a-zA-Z0-9_-]{11})$/]){const m=u.match(p);if(m)return m[1]}return null}
+function fmtTime(s){if(s<0)s=0;return[Math.floor(s/3600),Math.floor(s%3600/60),Math.floor(s%60)].map(v=>String(v).padStart(2,'0')).join(':')}
+function fmtDur(s){return s<60?s+'d':Math.floor(s/60)+'m '+Math.floor(s%60)+'s'}
+
+function setStatus(msg,type){
+  const el=document.getElementById('statusBar');el.classList.remove('hidden');
+  document.getElementById('statusText').innerHTML=msg;
+  const dot=document.getElementById('statusDot');
+  dot.className='w-2 h-2 rounded-full shrink-0 '+(type==='loading'?'bg-red-500 animate-[pulse_1s_infinite]':type==='success'?'bg-green-500':'bg-red-500');
+}
+function hideStatus(){document.getElementById('statusBar').classList.add('hidden')}
+
+// Overlays
+function showAnalyze(t,sub){document.getElementById('analyzeOverlay').classList.remove('hidden');document.getElementById('analyzeOverlay').classList.add('flex');document.getElementById('analyzeText').textContent=t||'Menganalisa...';document.getElementById('analyzeSubtext').textContent=sub||'Mengambil transcript'}
+function hideAnalyze(){document.getElementById('analyzeOverlay').classList.add('hidden');document.getElementById('analyzeOverlay').classList.remove('flex')}
+function showProgress(t,f){document.getElementById('progressOverlay').classList.remove('hidden');document.getElementById('progressOverlay').classList.add('flex');document.getElementById('progressTitle').textContent=t||'Mendownload...';document.getElementById('progressSubtitle').textContent=f||'';document.getElementById('progressFill').style.width='0%';document.getElementById('progressPercent').textContent='0%';document.getElementById('progressStatus').textContent='Menyiapkan...'}
+function setProgress(p,s){document.getElementById('progressFill').style.width=p+'%';document.getElementById('progressPercent').textContent=p+'%';if(s)document.getElementById('progressStatus').textContent=s}
+function hideProgress(){document.getElementById('progressOverlay').classList.add('hidden');document.getElementById('progressOverlay').classList.remove('flex')}
+
+// Job polling
+async function startJobAndPoll(params){
+  const sm={preparing:'Menyiapkan...',downloading:'Mengunduh video...',processing:'Memproses...',rendering:'Merender...',completed:'Selesai!',failed:'Gagal'};
+  const res=await fetch('/api/job/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});
+  const data=await res.json();if(!res.ok)throw new Error(data.error);
+  setProgress(5,sm[data.status]||'Menyiapkan...');
+  return new Promise((resolve,reject)=>{
+    const iv=setInterval(async()=>{
+      try{const r=await fetch('/api/job/'+data.jobId);const j=await r.json();setProgress(j.progress,sm[j.status]||j.status);
+        if(j.status==='completed'){clearInterval(iv);const a=document.createElement('a');a.href='/api/job/'+data.jobId+'/file';a.download=j.fileName||'clip.mp4';document.body.appendChild(a);a.click();a.remove();resolve(j)}
+        else if(j.status==='failed'){clearInterval(iv);reject(new Error(j.error||'Gagal'))}
+      }catch(e){}
+    },800);
+  });
+}
+
+// Analyze
+async function analyze(){
+  const raw=document.getElementById('urlInput').value.trim();
+  if(!raw){toast('Paste URL YouTube');return}
+  const id=extractId(raw);if(!id){toast('URL tidak valid');return}
+  vid=id;
+  const clipLen=+document.getElementById('optDuration').value,numClips=+document.getElementById('optCount').value;
+  const btn=document.getElementById('btnAnalyze');btn.disabled=true;
+  document.getElementById('analyzeSpinner').classList.remove('hidden');document.getElementById('analyzeSpinner').classList.add('inline-block');
+  document.getElementById('analyzeLabel').textContent='Analisa';
+  showAnalyze('Menganalisa...','Mengambil transcript & mencari momen terbaik');
+  document.getElementById('playerWrap').innerHTML='<iframe src="https://www.youtube.com/embed/'+id+'?rel=0&modestbranding=1" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen class="absolute inset-0 w-full h-full border-none"></iframe>';
+  document.getElementById('cList').innerHTML='';document.getElementById('cCount').textContent='...';
+  try{
+    const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({videoId:id,clipLength:clipLen,numClips})});
+    const data=await res.json();if(!res.ok)throw new Error(data.error);
+    clips=data.suggestions;videoTranscript=data.transcript||[];selectedClips=new Set(clips.map((_,i)=>i));
+    hideAnalyze();
+    setStatus(clips.length+' clip ditemukan dari '+data.totalSegments+' segmen','success');
+    document.getElementById('infoPanel').innerHTML='<div class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Info Video</div><div class="grid grid-cols-2 gap-2"><div class="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700"><div class="text-[10px] text-zinc-400 uppercase mb-1">Video ID</div><div class="text-sm font-mono font-semibold truncate">'+id+'</div></div><div class="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700"><div class="text-[10px] text-zinc-400 uppercase mb-1">Segments</div><div class="text-sm font-mono font-semibold text-red-500">'+data.totalSegments+'</div></div><div class="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700"><div class="text-[10px] text-zinc-400 uppercase mb-1">Durasi Clip</div><div class="text-sm font-mono font-semibold">'+clipLen+'s</div></div><div class="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700"><div class="text-[10px] text-zinc-400 uppercase mb-1">Suggestions</div><div class="text-sm font-mono font-semibold text-red-500">'+clips.length+'</div></div></div>';
+    renderClips();renderTimeline();
+  }catch(err){hideAnalyze();setStatus(err.message,'error');document.getElementById('cCount').textContent='Gagal'}
+  finally{btn.disabled=false;document.getElementById('analyzeSpinner').classList.add('hidden');document.getElementById('analyzeSpinner').classList.remove('inline-block')}
+}
+
+function renderClips(){
+  const list=document.getElementById('cList');
+  document.getElementById('cCount').textContent=selectedClips.size+'/'+clips.length;
+  if(!clips.length){list.innerHTML='<div class="text-center py-16 text-zinc-400 text-sm">Tidak ada clip ditemukan.</div>';return}
+  list.innerHTML=clips.map((c,i)=>'<div class="flex items-center gap-3 py-3 px-4 my-0.5 rounded-xl cursor-pointer transition hover:bg-zinc-50 dark:hover:bg-zinc-800/50 '+(selectedClips.has(i)?'bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20':'border border-transparent')+'" onclick="toggleClip('+i+')"><div class="w-5 h-5 rounded-md border-2 grid place-items-center shrink-0 text-[10px] font-bold '+(selectedClips.has(i)?'bg-red-500 border-red-500 text-white':'border-zinc-300 dark:border-zinc-600 text-transparent')+'">'+(selectedClips.has(i)?'&#10003;':'')+'</div><div class="w-16 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 overflow-hidden shrink-0 grid place-items-center text-xs text-zinc-400 cursor-pointer" onclick="event.stopPropagation();openPreview('+i+')">&#9654;</div><div class="flex-1 min-w-0"><div class="text-sm font-semibold truncate">'+(c.title||c.summary.substring(0,50))+'</div><div class="text-xs font-mono text-zinc-400 mt-0.5">'+fmtTime(c.startTime)+' &rarr; '+fmtTime(c.endTime)+' <span class="inline-block px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px]">'+fmtDur(c.duration)+'</span></div><div class="text-[10px] font-mono text-red-500 mt-1">'+c.score+' pts</div></div><div class="flex gap-0.5 shrink-0"><button class="w-7 h-7 rounded-lg grid place-items-center text-xs text-zinc-400 hover:bg-green-50 dark:hover:bg-green-500/10 hover:text-green-600 transition" onclick="event.stopPropagation();showDlPopover(event,'+i+')" title="Download">⬇</button><button class="w-7 h-7 rounded-lg grid place-items-center text-xs text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition" onclick="event.stopPropagation();copyClip('+i+')" title="Copy">⧉</button><button class="w-7 h-7 rounded-lg grid place-items-center text-xs text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition" onclick="event.stopPropagation();openPreview('+i+')" title="Preview">&#9654;</button></div></div>').join('');
+}
+
+function renderTimeline(){
+  const tl=document.getElementById('timelineSection');
+  if(!clips.length){tl.classList.add('hidden');return}
+  tl.classList.remove('hidden');
+  const mx=Math.max(...clips.map(c=>c.endTime));
+  document.getElementById('tReg').innerHTML=clips.map((c,i)=>{const l=(c.startTime/mx)*100,w=((c.endTime-c.startTime)/mx)*100;return '<div class="absolute top-0 h-full bg-red-500/15 border border-red-500/30 rounded cursor-pointer flex items-center justify-center transition hover:bg-red-500/25 pointer-events-auto" style="left:'+l+'%;width:'+Math.max(w,1)+'%" onclick="toggleClip('+i+')"><span class="text-[10px] font-bold text-red-500 font-mono">#'+(i+1)+'</span></div>'}).join('');
+  const cnt=Math.min(10,Math.ceil(mx/60)),step=mx/cnt;
+  document.getElementById('tTick').innerHTML=Array.from({length:cnt+1},(_,i)=>'<span class="text-[10px] font-mono text-zinc-400">'+fmtTime(i*step)+'</span>').join('');
+}
+
+function toggleClip(i){selectedClips.has(i)?selectedClips.delete(i):selectedClips.add(i);renderClips();renderTimeline()}
+function selectAll(){selectedClips.size===clips.length?selectedClips.clear():selectedClips=new Set(clips.map((_,i)=>i));renderClips();renderTimeline()}
+function copyClip(i){navigator.clipboard.writeText('https://youtube.com/watch?v='+vid+'&t='+clips[i].startTime+'s').then(()=>toast('URL disalin'))}
+
+// Download popover
+function showDlPopover(e,i){e.stopPropagation();popoverClipIdx=i;const pop=document.getElementById('dlPopover');const r=e.currentTarget.getBoundingClientRect();pop.style.top=(r.bottom+6)+'px';pop.style.left=Math.min(r.left,window.innerWidth-180)+'px';pop.classList.remove('hidden');setTimeout(()=>document.addEventListener('click',hideDlPopover,{once:true}),10)}
+function hideDlPopover(){document.getElementById('dlPopover').classList.add('hidden')}
+async function downloadFromPopover(format){
+  hideDlPopover();if(popoverClipIdx===null)return;
+  const i=popoverClipIdx,c=clips[i];
+  const name='clip_'+(i+1)+'_'+fmtTime(c.startTime)+'-'+fmtTime(c.endTime)+(format==='portrait'?'_portrait':'')+'.mp4';
+  showProgress(format==='portrait'?'Download Portrait':'Download Landscape',name);
+  try{const job=await startJobAndPoll({videoId:vid,start:c.startTime,end:c.endTime,title:'clip_'+(i+1),format,withSubtitles:true,transcript:videoTranscript});setProgress(100,'Selesai!');setTimeout(()=>{hideProgress();toast('Saved: '+(job.fileName||name))},600)}
+  catch(e){hideProgress();toast(e.message)}
+  popoverClipIdx=null;
+}
+
+// Modal
+function setFormat(f){currentFormat=f;document.getElementById('btnLandscape').className=f==='landscape'?'h-8 px-3 rounded-md text-xs font-medium bg-white dark:bg-zinc-700 shadow-sm cursor-pointer transition':'h-8 px-3 rounded-md text-xs font-medium text-zinc-500 cursor-pointer transition';document.getElementById('btnPortrait').className=f==='portrait'?'h-8 px-3 rounded-md text-xs font-medium bg-white dark:bg-zinc-700 shadow-sm cursor-pointer transition':'h-8 px-3 rounded-md text-xs font-medium text-zinc-500 cursor-pointer transition'}
+function openPreview(i){currentClipIdx=i;currentFormat='landscape';setFormat('landscape');document.getElementById('chkSubtitles').checked=true;const c=clips[i];document.getElementById('modalIframe').src='https://www.youtube.com/embed/'+vid+'?start='+c.startTime+'&autoplay=1&rel=0';document.getElementById('modalTitle').textContent=c.title||c.summary;document.getElementById('modalMeta').textContent=fmtTime(c.startTime)+' → '+fmtTime(c.endTime)+' ('+fmtDur(c.duration)+')';const segs=(videoTranscript||[]).filter(s=>{const t=s.offset/1000;return t>=c.startTime-2&&t<=c.endTime+2});const text=segs.map(s=>s.text).join(' ');const sents=text.split(/[.!?]+/).filter(s=>s.trim().length>5);document.getElementById('autoPreview').innerHTML='<div><strong>Opening:</strong> '+(sents[0]?.trim().substring(0,50)||'(auto)')+'</div><div><strong>Captions:</strong> '+segs.length+' segments</div><div><strong>Quote:</strong> '+(sents.reduce((a,b)=>a.length>b.length?a:b,'').trim().substring(0,60)||'(auto)')+'</div>';document.getElementById('modalOverlay').classList.remove('hidden')}
+function closeModal(){document.getElementById('modalOverlay').classList.add('hidden');document.getElementById('modalIframe').src='';currentClipIdx=null}
+
+async function exportFromModal(){
+  if(currentClipIdx===null)return;const c=clips[currentClipIdx],withSubs=document.getElementById('chkSubtitles').checked,isPortrait=currentFormat==='portrait';
+  showProgress(isPortrait?'Export Portrait':'Export Landscape','clip_'+(currentClipIdx+1)+'.mp4');
+  try{const job=await startJobAndPoll({videoId:vid,start:c.startTime,end:c.endTime,title:'clip_'+(currentClipIdx+1),format:isPortrait?'portrait':'landscape',withSubtitles:withSubs,transcript:videoTranscript});setProgress(100,'Selesai!');setTimeout(()=>{hideProgress();toast('Saved: '+(job.fileName||'clip.mp4'))},600)}
+  catch(e){hideProgress();toast(e.message)}
+}
+function copyFromModal(){if(currentClipIdx===null)return;copyClip(currentClipIdx)}
+
+async function downloadClip(i,quiet){
+  const c=clips[i];if(!quiet)showProgress('Download Clip #'+(i+1),'clip_'+(i+1)+'.mp4');
+  try{const job=await startJobAndPoll({videoId:vid,start:c.startTime,end:c.endTime,title:'clip_'+(i+1),format:'landscape',withSubtitles:true,transcript:videoTranscript});if(!quiet){setProgress(100,'Selesai!');setTimeout(()=>{hideProgress();toast('Saved: '+(job.fileName||'clip.mp4'))},600)}return true}
+  catch(e){if(!quiet){hideProgress();toast(e.message)}return false}
+}
+
+async function downloadSelected(){
+  if(!selectedClips.size){toast('Pilih clip dulu');return}
+  const arr=[...selectedClips];
+  const clipData=arr.map(i=>({videoId:vid,start:clips[i].startTime,end:clips[i].endTime,title:'clip_'+(i+1)}));
+  showProgress('Download '+arr.length+' clips sebagai ZIP','Mengunduh '+arr.length+' file...');
+  try{
+    const res=await fetch('/api/job/zip',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clips:clipData})});
+    const data=await res.json();if(!res.ok)throw new Error(data.error);
+    const jobId=data.jobId;
+    await new Promise((resolve,reject)=>{
+      const iv=setInterval(async()=>{
+        try{const r=await fetch('/api/job/'+jobId);const j=await r.json();
+          setProgress(j.progress,j.completed+'/'+arr.length+' clip diunduh');
+          if(j.status==='completed'){clearInterval(iv);const a=document.createElement('a');a.href='/api/job/'+jobId+'/file';a.download=j.fileName||'clips.zip';document.body.appendChild(a);a.click();a.remove();resolve(j)}
+          else if(j.status==='failed'){clearInterval(iv);reject(new Error(j.error||'Gagal'))}
+        }catch(e){}
+      },1000);
+    });
+    setProgress(100,'Selesai!');
+    setTimeout(()=>{hideProgress();toast(arr.length+' clip didownload sebagai ZIP')},600);
+  }catch(e){hideProgress();toast(e.message)}
+}
+
+function exportSelected(){const sel=clips.filter((_,i)=>selectedClips.has(i));if(!sel.length){toast('Pilih clip dulu');return}let t='YT Clipper - '+sel.length+' clips\nVideo: https://youtube.com/watch?v='+vid+'\n\n';sel.forEach((c,i)=>{t+='Clip #'+(i+1)+': '+fmtTime(c.startTime)+' → '+fmtTime(c.endTime)+' ('+fmtDur(c.duration)+')\nURL: https://youtube.com/watch?v='+vid+'&t='+c.startTime+'s\n\n'});navigator.clipboard.writeText(t).then(()=>toast('Export disalin'))}
+</script>
+</body>
+</html>

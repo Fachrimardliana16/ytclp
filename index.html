@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Clipper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0c0c0c;--surface:#161616;--border:#2a2a2a;--accent:#FF3D00;--accent-dim:#FF3D0033;--text:#f0f0f0;--text-dim:#888;--text-faint:#555;--radius:10px;--mono:'JetBrains Mono',monospace}
+    @media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f2f2f2;--surface:#fff;--border:#ddd;--accent:#D50000;--accent-dim:#D5000022;--text:#111;--text-dim:#666;--text-faint:#999}}
+    :root[data-theme="light"]{--bg:#f2f2f2;--surface:#fff;--border:#ddd;--accent:#D50000;--accent-dim:#D5000022;--text:#111;--text-dim:#666;--text-faint:#999}
+    body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+    .app{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:grid;place-items:center;color:#fff;font-size:16px;font-weight:800}
+    .logo-text{font-size:18px;font-weight:700;letter-spacing:-0.5px}
+    .logo-text span{color:var(--accent)}
+    .btn-icon{width:36px;height:36px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;display:grid;place-items:center;font-size:16px;transition:all .15s}
+    .btn-icon:hover{color:var(--text);border-color:var(--text-dim)}
+    .url-bar{display:flex;gap:8px;margin-bottom:24px}
+    .url-input{flex:1;height:48px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0 16px;font-size:14px;font-family:var(--mono);color:var(--text);outline:none;transition:border-color .15s}
+    .url-input:focus{border-color:var(--accent)}
+    .url-input::placeholder{color:var(--text-faint)}
+    .btn-load{height:48px;padding:0 24px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+    .btn-load:hover{opacity:.85}
+    .workspace{display:grid;grid-template-columns:1fr 320px;gap:20px;margin-bottom:28px}
+    @media(max-width:800px){.workspace{grid-template-columns:1fr}}
+    .player-wrap{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:var(--radius);overflow:hidden}
+    .player-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+    .placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:grid;place-items:center;color:var(--text-faint);font-size:14px;gap:8px}
+    .placeholder svg{opacity:.3}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:16px}
+    .panel-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim)}
+    .time-row{display:flex;gap:10px;align-items:center}
+    .time-field{flex:1}
+    .time-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--text-faint);margin-bottom:4px}
+    .time-input{width:100%;height:40px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:15px;font-family:var(--mono);font-weight:500;color:var(--text);text-align:center;outline:none;transition:border-color .15s;font-variant-numeric:tabular-nums}
+    .time-input:focus{border-color:var(--accent)}
+    .time-sep{color:var(--text-faint);font-size:18px;margin-top:18px}
+    .clip-dur{text-align:center;font-size:13px;color:var(--text-dim)}
+    .clip-dur strong{color:var(--accent);font-variant-numeric:tabular-nums}
+    .btn-create{width:100%;height:44px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s}
+    .btn-create:hover{opacity:.85}
+    .btn-create:disabled{opacity:.35;cursor:not-allowed}
+    .timeline-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:24px}
+    .timeline-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .timeline-bar{position:relative;height:40px;background:var(--bg);border-radius:6px;overflow:hidden}
+    .timeline-regions{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+    .timeline-region{position:absolute;top:0;height:100%;background:var(--accent-dim);border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);pointer-events:auto;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .timeline-region:hover{opacity:.8}
+    .region-label{font-size:10px;font-weight:600;color:var(--accent);font-family:var(--mono)}
+    .timeline-ticks{display:flex;justify-content:space-between;margin-top:6px}
+    .timeline-ticks span{font-size:10px;font-family:var(--mono);color:var(--text-faint);font-variant-numeric:tabular-nums}
+    .clips-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+    .clips-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .clips-count{font-size:13px;color:var(--text-dim);font-variant-numeric:tabular-nums}
+    .btn-export{height:32px;padding:0 14px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:500;color:var(--text-dim);cursor:pointer;transition:all .15s}
+    .btn-export:hover{color:var(--text);border-color:var(--text-dim)}
+    .clips-list{display:flex;flex-direction:column;gap:8px}
+    .clip-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;transition:border-color .15s}
+    .clip-item:hover{border-color:var(--text-faint)}
+    .clip-num{width:28px;height:28px;border-radius:6px;background:var(--accent-dim);color:var(--accent);font-size:12px;font-weight:700;display:grid;place-items:center;flex-shrink:0;font-family:var(--mono)}
+    .clip-info{flex:1;min-width:0}
+    .clip-times{font-size:14px;font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
+    .clip-dur2{font-size:12px;color:var(--text-dim);margin-top:2px}
+    .clip-actions{display:flex;gap:4px}
+    .clip-btn{width:30px;height:30px;border-radius:6px;background:transparent;border:1px solid transparent;color:var(--text-faint);cursor:pointer;display:grid;place-items:center;font-size:14px;transition:all .15s}
+    .clip-btn:hover{color:var(--text);border-color:var(--border)}
+    .clip-btn.delete:hover{color:#FF5252}
+    .empty-state{text-align:center;padding:32px 20px;color:var(--text-faint);font-size:14px}
+    .empty-state svg{display:block;margin:0 auto 12px;opacity:.3}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-size:13px;font-weight:500;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.4);opacity:0;transition:all .3s;z-index:100;pointer-events:none}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="logo"><div class="logo-icon">✂</div><div class="logo-text">YT<span>Clipper</span></div></div>
+    <button class="btn-icon" onclick="toggleTheme()">◐</button>
+  </header>
+  <div class="url-bar">
+    <input type="text" class="url-input" id="urlInput" placeholder="Tempel URL YouTube..." onkeydown="if(event.key==='Enter')loadVideo()">
+    <button class="btn-load" onclick="loadVideo()">Muat Video</button>
+  </div>
+  <div class="workspace">
+    <div class="player-wrap" id="playerWrap">
+      <div class="placeholder" id="ph">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg>
+        <span>Masukkan URL YouTube untuk mulai</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Buat Clip</div>
+      <div class="time-row">
+        <div class="time-field"><div class="time-label">Mulai</div><input type="text" class="time-input" id="tStart" value="00:00:00" oninput="updDur()"></div>
+        <span class="time-sep">—</span>
+        <div class="time-field"><div class="time-label">Selesai</div><input type="text" class="time-input" id="tEnd" value="00:00:10" oninput="updDur()"></div>
+      </div>
+      <div class="clip-dur">Durasi: <strong id="cDur">10 detik</strong></div>
+      <button class="btn-create" id="btnC" onclick="addClip()" disabled>✂ Tambahkan Clip</button>
+    </div>
+  </div>
+  <div class="timeline-section">
+    <div class="timeline-header"><div class="panel-title">Timeline</div><span id="tMax" style="font-size:12px;color:var(--text-faint);font-family:var(--mono)">—</span></div>
+    <div class="timeline-bar" id="tBar"><div class="timeline-regions" id="tReg"></div></div>
+    <div class="timeline-ticks" id="tTick"></div>
+  </div>
+  <div class="clips-section">
+    <div class="clips-header">
+      <div><div class="panel-title">Clip Saya</div><div class="clips-count" id="cCount">0 clip</div></div>
+      <button class="btn-export" onclick="exportAll()">📋 Export</button>
+    </div>
+    <div class="clips-list" id="cList">
+      <div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Belum ada clip. Muat video lalu tandai bagian yang ingin di-clip.
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let vid=null, clips=[];
+
+function toggleTheme(){const r=document.documentElement;r.setAttribute('data-theme',r.getAttribute('data-theme')==='dark'?'light':'dark')}
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
+
+function extractId(u){
+  for(const p of[/youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,/youtu\.be\/([a-zA-Z0-9_-]{11})/,/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,/^([a-zA-Z0-9_-]{11})$/]){
+    const m=u.match(p);if(m)return m[1]}return null}
+
+function loadVideo(){
+  const raw=document.getElementById('urlInput').value.trim();
+  if(!raw){toast('Masukkan URL YouTube dulu');return}
+  const id=extractId(raw);
+  if(!id){toast('URL tidak valid');return}
+  vid=id;
+
+  // Test embed dulu
+  const testFrame=document.createElement('iframe');
+  testFrame.style.display='none';
+  testFrame.src=`https://www.youtube.com/embed/${id}`;
+  testFrame.onerror=()=>{toast('Video tidak bisa di-embed');testFrame.remove()};
+  document.body.appendChild(testFrame);
+  setTimeout(()=>testFrame.remove(),5000);
+
+  document.getElementById('playerWrap').innerHTML=`<iframe
+    src="https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1"
+    allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"
+    allowfullscreen></iframe>`;
+  document.getElementById('btnC').disabled=false;
+  toast('Video dimuat!')
+}
+
+function pSec(s){const p=s.split(':').map(Number);if(p.some(isNaN))return-1;if(p.length===3)return p[0]*3600+p[1]*60+p[2];if(p.length===2)return p[0]*60+p[1];if(p.length===1)return p[0];return-1}
+function fSec(s){if(s<0)s=0;return[Math.floor(s/3600),Math.floor(s%3600/60),Math.floor(s%60)].map(v=>String(v).padStart(2,'0')).join(':')}
+function fDur(s){return s<60?s+' detik':Math.floor(s/60)+' mnt '+Math.floor(s%60)+' dtk'}
+
+function updDur(){
+  const s=pSec(document.getElementById('tStart').value),e=pSec(document.getElementById('tEnd').value);
+  document.getElementById('cDur').textContent=(s>=0&&e>=0&&e>s)?fDur(e-s):'—'}
+
+function addClip(){
+  const s=pSec(document.getElementById('tStart').value),e=pSec(document.getElementById('tEnd').value);
+  if(s<0||e<0){toast('Format waktu salah');return}
+  if(e<=s){toast('Selesai harus setelah mulai');return}
+  clips.push({s,e});clips.sort((a,b)=>a.s-b.s);
+  render();toast('Clip #'+clips.length+' ditambahkan')
+}
+
+function render(){
+  const l=document.getElementById('cList'),n=clips.length;
+  document.getElementById('cCount').textContent=n+' clip';
+  if(!n){l.innerHTML='<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Belum ada clip.</div>';document.getElementById('tReg').innerHTML='';document.getElementById('tTick').innerHTML='';document.getElementById('tMax').textContent='—';return}
+  l.innerHTML=clips.map((c,i)=>`<div class="clip-item"><div class="clip-num">${i+1}</div><div class="clip-info"><div class="clip-times">${fSec(c.s)} → ${fSec(c.e)}</div><div class="clip-dur2">${fDur(c.e-c.s)}</div></div><div class="clip-actions"><button class="clip-btn" onclick="openClip(${i})">▶</button><button class="clip-btn" onclick="copyClip(${i})">📋</button><button class="clip-btn delete" onclick="delClip(${i})">✕</button></div></div>`).join('');
+  const mx=Math.max(...clips.map(c=>c.e));
+  document.getElementById('tMax').textContent=fSec(mx);
+  document.getElementById('tReg').innerHTML=clips.map((c,i)=>{const l=(c.s/mx)*100,w=((c.e-c.s)/mx)*100;return`<div class="timeline-region" style="left:${l}%;width:${w}%" onclick="openClip(${i})"><span class="region-label">#${i+1}</span></div>`}).join('');
+  const cnt=Math.min(10,Math.ceil(mx/60)),step=mx/cnt;
+  document.getElementById('tTick').innerHTML=Array.from({length:cnt+1},(_,i)=>`<span>${fSec(i*step)}</span>`).join('')}
+
+function openClip(i){window.open(`https://youtube.com/watch?v=${vid}&t=${Math.floor(clips[i].s)}s`,'_blank')}
+function delClip(i){clips.splice(i,1);render();toast('Clip dihapus')}
+function copyClip(i){navigator.clipboard.writeText(`https://youtube.com/watch?v=${vid}&t=${Math.floor(clips[i].s)}s`).then(()=>toast('URL disalin!'))}
+
+function exportAll(){
+  if(!clips.length){toast('Belum ada clip');return}
+  let t=`YT Clipper — ${clips.length} clip\nVideo: https://youtube.com/watch?v=${vid}\n${'─'.repeat(40)}\n\n`;
+  clips.forEach((c,i)=>{t+=`Clip #${i+1}:  ${fSec(c.s)} → ${fSec(c.e)}  (${fDur(c.e-c.s)})\nURL: https://youtube.com/watch?v=${vid}&t=${Math.floor(c.s)}s\n\n`});
+  t+=`${'─'.repeat(40)}\nUntuk export file video:\n• yt-dlp: yt-dlp --download-sections "*START-END" URL\n• FFmpeg: ffmpeg -i input -ss START -to END -c copy output.mp4\n`;
+  navigator.clipboard.writeText(t).then(()=>toast('Export disalin!'))}
+</script>
+</body>
+</html>
