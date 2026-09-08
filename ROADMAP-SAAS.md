@@ -62,9 +62,9 @@ User bisa bayar dan unlock fitur premium.
 - [x] Credit system (1 clip = 1 credit) — `db/schema.sql` + credit check
 - [x] Webhook handler for Stripe events — `payment/stripe.js`
 - [x] Google OAuth login — `auth/routes.js` `/api/auth/google`
-- [ ] Overage pricing (Rp 2.000/clip extra)
-- [ ] Invoice & receipt email (auto via Stripe)
-- [ ] Promo code / coupon system
+- [x] Overage pricing (Rp 2.000/clip extra) — `server.js` credit check
+- [x] Invoice & receipt email (auto via Stripe) — `payment/stripe.js` receipt_email
+- [x] Promo code / coupon system — `payment/coupons.js`
 
 ### Stripe Flow
 ```
