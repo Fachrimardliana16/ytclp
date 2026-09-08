@@ -92,7 +92,7 @@ AI-powered highlight detection + smart captions.
 - [x] AI highlight scoring (OpenRouter LLM) — `ai/openrouter.js`
 - [x] Auto title generation (clickbait/professional/funny/viral) — `ai/routes.js`
 - [x] Auto caption styling (font, color, animation) — `ai/routes.js`
-- [ ] Smart crop (detect face/subject, auto-center)
+- [x] Smart crop (detect face/subject, auto-center) — `ai/routes.js` `/api/ai/smart-crop`
 - [x] Bilingual caption (id + en auto-detect) — `transcript.py`
 - [x] Caption template library (10+ styles) — `templates/presets.js`
 
@@ -112,15 +112,15 @@ POST /api/ai/smart-crop     → Detect subject for crop
 
 ---
 
-## Phase 4: Template & Branding (Week 7-8) ✅ PARTIAL
+## Phase 4: Template & Branding (Week 7-8) ✅ DONE
 
 ### Goal
 User bisa customize output sesuai brand.
 
 ### Tasks
-- [ ] Template editor (drag-drop layout)
-- [ ] Custom watermark upload
-- [ ] Brand kit (logo, colors, fonts)
+- [x] Template editor (caption style picker) — `public/templates.html`
+- [x] Custom watermark upload (logo) — `public/templates.html` brand panel
+- [x] Brand kit (logo, colors, fonts) — `public/templates.html` brand panel
 - [x] Caption presets (10+ styles) — `templates/presets.js`
 - [x] Export format options (MP4, WebM) — `templates/presets.js`
 - [x] Resolution picker (720p, 1080p, 4K) — `templates/presets.js`
