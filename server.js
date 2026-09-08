@@ -53,10 +53,14 @@ const { authMiddleware } = require('./auth/middleware');
 const authRoutes = require('./auth/routes');
 const paymentRoutes = require('./payment/routes');
 const couponRoutes = require('./payment/coupons');
+const aiRoutes = require('./ai/routes');
+const templateRoutes = require('./templates/routes');
 app.use(authMiddleware); // must be BEFORE auth routes
 app.use('/api/auth', authRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/coupon', couponRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/templates', templateRoutes);
 
 // ===== Transcript cache (avoids re-fetching same video) =====
 const transcriptCache = new Map(); // videoId -> {segments, title, ts}
