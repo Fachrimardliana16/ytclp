@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YT Clipper</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ef4444">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={darkMode:'class'}</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -352,6 +355,8 @@ async function downloadSelected(){
 }
 
 function exportSelected(){const sel=clips.filter((_,i)=>selectedClips.has(i));if(!sel.length){toast('Pilih clip dulu');return}let t='YT Clipper - '+sel.length+' clips\nVideo: https://youtube.com/watch?v='+vid+'\n\n';sel.forEach((c,i)=>{t+='Clip #'+(i+1)+': '+fmtTime(c.startTime)+' → '+fmtTime(c.endTime)+' ('+fmtDur(c.duration)+')\nURL: https://youtube.com/watch?v='+vid+'&t='+c.startTime+'s\n\n'});navigator.clipboard.writeText(t).then(()=>toast('Export disalin'))}
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 </script>
 </body>
 </html>
