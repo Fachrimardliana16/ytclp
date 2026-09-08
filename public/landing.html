@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Clipper — Auto Clip Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class'}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>body{font-family:'Inter',system-ui,sans-serif}</style>
+</head>
+<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+
+<!-- Nav -->
+<nav class="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur">
+  <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-red-500 text-white grid place-items-center text-sm font-bold">YC</div>
+      <span class="font-bold text-lg">YT Clipper</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/login.html" class="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition">Login</a>
+      <a href="/register.html" class="h-9 px-4 rounded-lg bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition">Daftar Gratis</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="py-20 px-4 text-center">
+  <div class="max-w-3xl mx-auto">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-xs font-medium text-red-600 dark:text-red-400 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+      Auto Clip Generator
+    </div>
+    <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+      Buat Short Video<br>
+      <span class="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">OTOMATIS</span>
+    </h1>
+    <p class="text-lg text-zinc-500 mb-8 max-w-xl mx-auto">Paste link YouTube, AI cari momen terbaik, dan download clip siap post ke TikTok, Reels, dan Shorts.</p>
+    <div class="flex gap-3 justify-center flex-wrap">
+      <a href="/register.html" class="h-12 px-8 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition shadow-lg shadow-red-500/20">Mulai Gratis</a>
+      <a href="#pricing" class="h-12 px-8 rounded-xl border border-zinc-300 dark:border-zinc-700 font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">Lihat Harga</a>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="py-16 px-4 bg-white dark:bg-zinc-900/50 border-y border-zinc-200 dark:border-zinc-800">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-2xl font-bold text-center mb-12">Kenapa YT Clipper?</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 grid place-items-center text-lg mb-4">🎯</div>
+        <h3 class="font-bold mb-2">AI Highlight Detection</h3>
+        <p class="text-sm text-zinc-500">Otomatis temukan momen paling menarik dari video panjang.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 grid place-items-center text-lg mb-4">📱</div>
+        <h3 class="font-bold mb-2">Format 9:16 Portrait</h3>
+        <p class="text-sm text-zinc-500">Langsung siap untuk TikTok, Reels, dan YouTube Shorts.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 grid place-items-center text-lg mb-4">💬</div>
+        <h3 class="font-bold mb-2">Auto Subtitle</h3>
+        <p class="text-sm text-zinc-500">Caption otomatis dari transcript, bilingual Indonesia & Inggris.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="py-16 px-4">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-2xl font-bold text-center mb-12">Cara Kerja</h2>
+    <div class="space-y-8">
+      <div class="flex gap-4 items-start">
+        <div class="w-8 h-8 rounded-full bg-red-500 text-white grid place-items-center text-sm font-bold shrink-0">1</div>
+        <div><h3 class="font-bold mb-1">Paste Link YouTube</h3><p class="text-sm text-zinc-500">Masukkan URL video YouTube yang ingin di-clip.</p></div>
+      </div>
+      <div class="flex gap-4 items-start">
+        <div class="w-8 h-8 rounded-full bg-red-500 text-white grid place-items-center text-sm font-bold shrink-0">2</div>
+        <div><h3 class="font-bold mb-1">AI Analisa & Pilih Momen</h3><p class="text-sm text-zinc-500">Sistem kami analisa transcript dan temukan highlight terbaik.</p></div>
+      </div>
+      <div class="flex gap-4 items-start">
+        <div class="w-8 h-8 rounded-full bg-red-500 text-white grid place-items-center text-sm font-bold shrink-0">3</div>
+        <div><h3 class="font-bold mb-1">Pilih & Export</h3><p class="text-sm text-zinc-500">Pilih clip, pilih format (landscape/portrait), langsung download.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing" class="py-16 px-4 bg-white dark:bg-zinc-900/50 border-y border-zinc-200 dark:border-zinc-800">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-2xl font-bold text-center mb-4">Harga</h2>
+    <p class="text-center text-zinc-500 mb-12">Mulai gratis, upgrade kalau butuh lebih.</p>
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Free -->
+      <div class="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div class="text-sm font-semibold text-zinc-400 mb-2">Free</div>
+        <div class="text-3xl font-extrabold mb-4">Rp 0<span class="text-sm font-normal text-zinc-400">/bulan</span></div>
+        <ul class="space-y-2 text-sm text-zinc-500 mb-6">
+          <li>10 clip/bulan</li>
+          <li>Watermark 10%</li>
+          <li>720p output</li>
+          <li>Basic templates</li>
+        </ul>
+        <a href="/register.html" class="block text-center h-10 rounded-lg border border-zinc-300 dark:border-zinc-700 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">Mulai Gratis</a>
+      </div>
+      <!-- Pro -->
+      <div class="p-6 rounded-2xl border-2 border-red-500 relative">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-red-500 text-white text-xs font-semibold">Populer</div>
+        <div class="text-sm font-semibold text-red-500 mb-2">Pro</div>
+        <div class="text-3xl font-extrabold mb-4">Rp 99k<span class="text-sm font-normal text-zinc-400">/bulan</span></div>
+        <ul class="space-y-2 text-sm text-zinc-500 mb-6">
+          <li>100 clip/bulan</li>
+          <li>Tanpa watermark</li>
+          <li>1080p output</li>
+          <li>Semua templates</li>
+          <li>Custom captions</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="/register.html?plan=pro" class="block text-center h-10 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition">Pilih Pro</a>
+      </div>
+      <!-- Business -->
+      <div class="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+        <div class="text-sm font-semibold text-zinc-400 mb-2">Business</div>
+        <div class="text-3xl font-extrabold mb-4">Rp 299k<span class="text-sm font-normal text-zinc-400">/bulan</span></div>
+        <ul class="space-y-2 text-sm text-zinc-500 mb-6">
+          <li>500 clip/bulan</li>
+          <li>Semua fitur Pro</li>
+          <li>4K output</li>
+          <li>API access</li>
+          <li>Batch export</li>
+          <li>Team management</li>
+        </ul>
+        <a href="/register.html?plan=business" class="block text-center h-10 rounded-lg border border-zinc-300 dark:border-zinc-700 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">Pilih Business</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-8 px-4 text-center text-sm text-zinc-400 border-t border-zinc-200 dark:border-zinc-800">
+  <p>&copy; 2026 YT Clipper. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

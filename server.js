@@ -13,8 +13,46 @@ const tmpDir = path.join(__dirname, '.tmp');
 const PYTHON_PATH = process.env.PYTHON_PATH || path.join(__dirname, 'venv', 'bin', 'python3');
 if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ===== Security headers =====
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.removeHeader('X-Powered-By');
+  next();
+});
+
+// ===== Rate limiter =====
+const rateLimit = new Map();
+function rateLimiter(req, res, next) {
+  const ip = req.ip || 'unknown';
+  const now = Date.now();
+  const e = rateLimit.get(ip);
+  if (!e || now - e.start > 60000) { rateLimit.set(ip, { start: now, count: 1 }); return next(); }
+  e.count++;
+  if (e.count > 30) return res.status(429).json({ error: 'Terlalu banyak request' });
+  next();
+}
+app.use('/api/', rateLimiter);
+
+// ===== CORS =====
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
+// ===== Auth =====
+const { authMiddleware } = require('./auth/middleware');
+const authRoutes = require('./auth/routes');
+app.use(authMiddleware); // must be BEFORE auth routes
+app.use('/api/auth', authRoutes);
 
 // ===== Transcript cache (avoids re-fetching same video) =====
 const transcriptCache = new Map(); // videoId -> {segments, title, ts}
@@ -297,10 +335,26 @@ function processClip(job, { portrait = false, withSubs = false, audioCodec = 'co
   }).catch(err => { job.status = 'failed'; job.error = err.message; done(); });
 }
 
-app.post('/api/job/start', (req, res) => {
+app.post('/api/job/start', async (req, res) => {
   try { acquireJob(); } catch (e) { return res.status(429).json({ error: e.message }); }
   const v = validateClipRange(req.body);
   if (!v.ok) { releaseJob(); return res.status(400).json({ error: v.errors.join('; ') }); }
+
+  // Credit check (optional auth)
+  if (req.user) {
+    const db = require('./db');
+    const user = await db.findById('users', req.user.id);
+    if (user && user.credits <= 0) {
+      releaseJob();
+      return res.status(403).json({ error: 'Credits habis. Upgrade plan atau tunggu bulan depan.' });
+    }
+    // Deduct credit
+    if (user) {
+      await db.update('users', user.id, { credits: user.credits - 1, credits_used: (user.credits_used || 0) + 1 });
+      await db.insert('usage_log', { user_id: user.id, action: 'export', credits_used: 1 });
+    }
+  }
+
   const { videoId, start, end } = v;
   const title = req.body.title || 'clip';
   const withSubs = req.body.withSubtitles !== false;
@@ -379,7 +433,19 @@ app.get('/api/debug', (req, res) => {
   res.json({ hasYtdlp, hasFfmpeg: !!hasFFmpeg, downloadsDir: userDownloads, tmpDir, jobs: jobs.size });
 });
 
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+// ===== Global error handler =====
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+app.get('*', (req, res) => {
+  // Serve landing for root, app for /app, auth pages, or 404
+  if (req.path === '/') return res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+  const publicPages = ['/login.html', '/register.html', '/app.html', '/profile.html', '/landing.html'];
+  if (publicPages.includes(req.path)) return res.sendFile(path.join(__dirname, 'public', req.path.slice(1)));
+  res.status(404).sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
 httpServer = app.listen(PORT, () => console.log(`\n✂  YT Clipper → http://localhost:${PORT}\n`));
 
 // Check tools
