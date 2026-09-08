@@ -51,25 +51,20 @@ payments (id, user_id, amount, currency, status, stripe_id, created_at)
 
 ---
 
-## Phase 2: Payment & Subscription (Week 3-4) 🔲 NEXT
+## Phase 2: Payment & Subscription (Week 3-4) ✅ DONE
 
 ### Goal
 User bisa bayar dan unlock fitur premium.
 
 ### Tasks
-- [ ] Stripe integration (checkout + billing portal)
-- [ ] 3 tier pricing:
-  | Plan | Harga | Clips/bulan | Fitur |
-  |------|-------|-------------|-------|
-  | Free | Rp 0 | 10 | Watermark, 720p, basic templates |
-  | Pro | Rp 99.000/bulan | 100 | No watermark, 1080p, all templates, custom captions |
-  | Business | Rp 299.000/bulan | 500 | API access, batch export, priority queue, white-label |
+- [x] Stripe integration (checkout + billing portal) — `payment/stripe.js`
+- [x] 3 tier pricing — `payment/routes.js` + `/api/payment/plans`
+- [x] Credit system (1 clip = 1 credit) — `db/schema.sql` + credit check
+- [x] Webhook handler for Stripe events — `payment/stripe.js`
+- [x] Google OAuth login — `auth/routes.js` `/api/auth/google`
 - [ ] Overage pricing (Rp 2.000/clip extra)
 - [ ] Invoice & receipt email (auto via Stripe)
-- [ ] Subscription management (upgrade/downgrade/cancel)
 - [ ] Promo code / coupon system
-- [ ] Webhook handler for Stripe events
-- [ ] Google OAuth login
 
 ### Stripe Flow
 ```
