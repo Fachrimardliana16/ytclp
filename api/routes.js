@@ -101,7 +101,7 @@ router.get('/projects', async (req, res) => {
 
 // ===== Get API key =====
 router.get('/key', (req, res) => {
-  res.json({ apiKey: req.user.api_key || null, plan: req.plan });
+  res.json({ apiKey: req.user?.api_key || null, plan: req.plan });
 });
 
 // ===== API docs =====

@@ -29,7 +29,7 @@ router.post('/register', async (req, res) => {
     });
 
     const token = signJWT({ sub: user.id, email: user.email });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, credits: user.credits, api_key: apiKey } });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, credits: user.credits, api_key: user.api_key } });
   } catch (err) {
     console.error('Register error:', err.message);
     res.status(500).json({ error: 'Gagal register' });
