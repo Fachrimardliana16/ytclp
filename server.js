@@ -52,9 +52,11 @@ app.use((req, res, next) => {
 const { authMiddleware } = require('./auth/middleware');
 const authRoutes = require('./auth/routes');
 const paymentRoutes = require('./payment/routes');
+const couponRoutes = require('./payment/coupons');
 app.use(authMiddleware); // must be BEFORE auth routes
 app.use('/api/auth', authRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/coupon', couponRoutes);
 
 // ===== Transcript cache (avoids re-fetching same video) =====
 const transcriptCache = new Map(); // videoId -> {segments, title, ts}
@@ -356,18 +358,23 @@ app.post('/api/job/start', async (req, res) => {
   const v = validateClipRange(req.body);
   if (!v.ok) { releaseJob(); return res.status(400).json({ error: v.errors.join('; ') }); }
 
-  // Credit check (optional auth)
+  // Credit check + overage pricing (optional auth)
   if (req.user) {
     const db = require('./db');
     const user = await db.findById('users', req.user.id);
-    if (user && user.credits <= 0) {
-      releaseJob();
-      return res.status(403).json({ error: 'Credits habis. Upgrade plan atau tunggu bulan depan.' });
-    }
-    // Deduct credit
     if (user) {
-      await db.update('users', user.id, { credits: user.credits - 1, credits_used: (user.credits_used || 0) + 1 });
-      await db.insert('usage_log', { user_id: user.id, action: 'export', credits_used: 1 });
+      let creditsUsed = 1;
+      let overage = 0;
+      if (user.credits <= 0) {
+        // Overage: Rp 2.000/clip for free, Rp 1.000/clip for pro
+        overage = user.plan === 'pro' ? 1000 : user.plan === 'business' ? 500 : 2000;
+        creditsUsed = 0; // don't deduct from credits, charge overage
+      }
+      await db.update('users', user.id, {
+        credits: Math.max(0, user.credits - creditsUsed),
+        credits_used: (user.credits_used || 0) + creditsUsed,
+      });
+      await db.insert('usage_log', { user_id: user.id, action: 'export', credits_used: creditsUsed, metadata: overage > 0 ? { overage, amount: overage } : null });
     }
   }
 

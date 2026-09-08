@@ -36,6 +36,7 @@ async function createCheckoutSession(userId, plan) {
     cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/app.html`,
     metadata: { userId, plan },
     subscription_data: { metadata: { userId, plan } },
+    payment_intent_data: { receipt_email: user.email },
   });
 
   return { sessionId: session.id, url: session.url };

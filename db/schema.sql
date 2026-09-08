@@ -75,6 +75,21 @@ CREATE TABLE payments (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- ===== Coupons =====
+CREATE TABLE coupons (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  code VARCHAR(50) UNIQUE NOT NULL,
+  discount_type VARCHAR(20) NOT NULL CHECK (discount_type IN ('percent', 'amount')),
+  discount_value INT NOT NULL, -- percent (1-100) or amount in cents
+  max_uses INT DEFAULT 0, -- 0 = unlimited
+  used_count INT DEFAULT 0,
+  plan_override VARCHAR(20), -- if set, coupon grants this plan
+  credits_bonus INT DEFAULT 0, -- extra credits on apply
+  expires_at TIMESTAMP,
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 -- ===== Indexes =====
 CREATE INDEX idx_projects_user ON projects(user_id);
 CREATE INDEX idx_projects_status ON projects(status);
