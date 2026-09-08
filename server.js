@@ -272,6 +272,16 @@ app.post('/api/analyze', async (req, res) => {
   try {
     const v = validateClipRequest(req.body);
     if (!v.ok) return res.status(400).json({ error: v.errors.join('; ') });
+
+    // Credit check for logged-in users
+    if (req.user) {
+      const db = require('./db');
+      const user = await db.findById('users', req.user.id);
+      if (user && user.credits <= 0) {
+        return res.status(403).json({ error: 'Credits habis. Upgrade plan atau tunggu bulan depan.' });
+      }
+    }
+
     const result = await getCachedTranscript(v.videoId);
     res.json({ suggestions: analyzeTranscript(result.segments || [], v.clipLength, v.numClips), videoId: v.videoId, totalSegments: result.segments.length, transcript: result.segments || [] });
   } catch (err) { res.status(err.message.includes('transcript') || err.message.includes('Python') ? 400 : 500).json({ error: err.message }); }
@@ -300,7 +310,7 @@ function dlClip(videoId, start, end, outFile) {
   });
 }
 
-function processClip(job, { portrait = false, withSubs = false, audioCodec = 'copy' } = {}) {
+function processClip(job, { portrait = false, withSubs = false, audioCodec = 'copy', watermark = false } = {}) {
   const { id, videoId, start, end, transcript } = job;
   const tmpFile = path.join(tmpDir, `job_${id}.mp4`);
   const srtFile = path.join(tmpDir, `cap_${id}.srt`);
@@ -312,6 +322,7 @@ function processClip(job, { portrait = false, withSubs = false, audioCodec = 'co
 
   const useOverlay = withSubs && hasDrawtext;
   const useSubs = withSubs && hasSubtitles;
+  const useWatermark = watermark && hasDrawtext;
 
   job.status = 'downloading'; job.progress = 10;
 
@@ -324,6 +335,9 @@ function processClip(job, { portrait = false, withSubs = false, audioCodec = 'co
       useSrt = srtFile;
     }
     const filters = useOverlay ? buildDrawtextFilters(overlay) : [];
+    if (useWatermark) {
+      filters.push(`drawtext=fontfile='${FONT_PATH}':text='YT Clipper':fontsize=20:fontcolor=white@0.5:borderw=1:bordercolor=black@0.3:x=w-tw-20:y=h-th-20`);
+    }
     const ffCmd = buildFfmpegCmd(srcFile, destFile, { filters, srtFile: useSrt, portrait, audioCodec });
     job.progress = 60;
     exec(ffCmd, { timeout: 120000 }, (err2) => {
@@ -359,9 +373,10 @@ app.post('/api/job/start', async (req, res) => {
   const title = req.body.title || 'clip';
   const withSubs = req.body.withSubtitles !== false;
   const portrait = req.body.format === 'portrait';
+  const isFree = !req.user || (req.user && (!req.user.plan || req.user.plan === 'free'));
   const job = newJob('download', { videoId, start, end, title, transcript: req.body.transcript || [] });
   job._release = releaseJob;
-  processClip(job, { portrait, withSubs, audioCodec: portrait ? 'aac' : 'copy' });
+  processClip(job, { portrait, withSubs, audioCodec: portrait ? 'aac' : 'copy', watermark: isFree });
   res.json({ jobId: job.id, status: job.status });
 });
 

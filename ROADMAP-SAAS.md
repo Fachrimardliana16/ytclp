@@ -1,17 +1,25 @@
 # YT Clipper SaaS — Roadmap
 
-## Phase 1: MVP Core (Week 1-2)
+## Phase 1: MVP Core (Week 1-2) ✅ DONE
 
 ### Goal
 Landing page + basic clipping workflow yang bisa dipakai user.
 
 ### Tasks
-- [ ] Landing page (pricing, features, CTA)
-- [ ] User auth (email + password, Google OAuth)
-- [ ] Dashboard setelah login
-- [ ] YouTube URL → auto analyze → clip selection → export
-- [ ] Free tier: 3 clips/hari, watermark 10%
-- [ ] Profile page (basic info, usage stats)
+- [x] Landing page (pricing, features, CTA) — `/landing.html`
+- [x] User auth (email + password) — `auth/` module (JWT + crypto)
+- [x] Dashboard setelah login — `/app.html` dengan auth check
+- [x] YouTube URL → auto analyze → clip selection → export — `server.js`
+- [x] Free tier: 10 clips/bulan — credit system + `db/schema.sql`
+- [x] Profile page — `/profile.html`
+- [x] Database schema — `db/schema.sql` (users, projects, clips, usage, payments)
+- [x] In-memory store fallback — `db/index.js`
+- [x] Security headers + rate limiter — server.js middleware
+- [x] CORS + error handler — server.js
+
+### Remaining
+- [ ] Google OAuth (Phase 2)
+- [ ] Watermark overlay untuk free tier
 
 ### Tech Stack
 - **Frontend**: Next.js 14 (App Router) + Tailwind + shadcn/ui
@@ -43,7 +51,7 @@ payments (id, user_id, amount, currency, status, stripe_id, created_at)
 
 ---
 
-## Phase 2: Payment & Subscription (Week 3-4)
+## Phase 2: Payment & Subscription (Week 3-4) 🔲 NEXT
 
 ### Goal
 User bisa bayar dan unlock fitur premium.
@@ -56,12 +64,12 @@ User bisa bayar dan unlock fitur premium.
   | Free | Rp 0 | 10 | Watermark, 720p, basic templates |
   | Pro | Rp 99.000/bulan | 100 | No watermark, 1080p, all templates, custom captions |
   | Business | Rp 299.000/bulan | 500 | API access, batch export, priority queue, white-label |
-- [ ] Credit system (1 clip = 1 credit)
 - [ ] Overage pricing (Rp 2.000/clip extra)
 - [ ] Invoice & receipt email (auto via Stripe)
 - [ ] Subscription management (upgrade/downgrade/cancel)
 - [ ] Promo code / coupon system
 - [ ] Webhook handler for Stripe events
+- [ ] Google OAuth login
 
 ### Stripe Flow
 ```
@@ -80,7 +88,7 @@ GET  /api/usage             → Check credit usage
 
 ---
 
-## Phase 3: AI Features (Week 5-6)
+## Phase 3: AI Features (Week 5-6) 🔄 PARTIAL
 
 ### Goal
 AI-powered highlight detection + smart captions.
@@ -90,7 +98,7 @@ AI-powered highlight detection + smart captions.
 - [ ] Auto title generation (clickbait-worthy)
 - [ ] Auto caption styling (font, color, animation)
 - [ ] Smart crop (detect face/subject, auto-center)
-- [ ] Bilingual caption (id + en auto-detect)
+- [x] Bilingual caption (id + en auto-detect) — `transcript.py`
 - [ ] Caption template library (10+ styles)
 
 ### AI Integration
