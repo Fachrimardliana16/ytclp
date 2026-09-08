@@ -55,12 +55,16 @@ const paymentRoutes = require('./payment/routes');
 const couponRoutes = require('./payment/coupons');
 const aiRoutes = require('./ai/routes');
 const templateRoutes = require('./templates/routes');
+const analyticsRoutes = require('./analytics/routes');
+const apiRoutes = require('./api/routes');
 app.use(authMiddleware); // must be BEFORE auth routes
 app.use('/api/auth', authRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/coupon', couponRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/templates', templateRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/v1', apiRoutes);
 
 // ===== Transcript cache (avoids re-fetching same video) =====
 const transcriptCache = new Map(); // videoId -> {segments, title, ts}

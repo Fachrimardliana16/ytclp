@@ -17,6 +17,7 @@ router.post('/register', async (req, res) => {
     const existing = await db.findBy('users', 'email', email);
     if (existing) return res.status(409).json({ error: 'Email sudah terdaftar' });
 
+    const apiKey = 'yc_' + require('crypto').randomBytes(24).toString('hex');
     const user = await db.insert('users', {
       email,
       name: name || email.split('@')[0],
@@ -24,10 +25,11 @@ router.post('/register', async (req, res) => {
       plan: 'free',
       credits: 10,
       credits_used: 0,
+      api_key: apiKey,
     });
 
     const token = signJWT({ sub: user.id, email: user.email });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, credits: user.credits } });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, credits: user.credits, api_key: apiKey } });
   } catch (err) {
     console.error('Register error:', err.message);
     res.status(500).json({ error: 'Gagal register' });

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics — YT Clipper</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#fafafa;--surface:#fff;--surface2:#f4f4f5;--border:#e4e4e7;--text:#09090b;--text2:#52525b;--text3:#a1a1aa;--accent:#ef4444;--accent2:#f97316;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--radius:14px;--radius-sm:10px}
+    @media(prefers-color-scheme:dark){:root{--bg:#09090b;--surface:#18181b;--surface2:#27272a;--border:#2e2e32;--text:#f5f5f7;--text2:#a1a1aa;--text3:#71717a;--accent:#ef4444;--accent2:#f97316;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7}}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    nav{border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:50}
+    .nav-inner{max-width:1000px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between}
+    .back{font-size:14px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:6px}
+    .back:hover{color:var(--text)}
+    main{max-width:1000px;margin:0 auto;padding:24px 16px 80px}
+    h1{font-size:24px;font-weight:800;margin-bottom:24px}
+
+    /* Stats Grid */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+    @media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+    .stat-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+    .stat-value{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+    .stat-value.accent{color:var(--accent)}
+    .stat-value.green{color:var(--green)}
+    .stat-value.blue{color:var(--blue)}
+    .stat-value.purple{color:var(--purple)}
+    .stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+    /* Chart */
+    .chart-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px}
+    .chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .chart-title{font-size:16px;font-weight:700}
+    .chart-container{position:relative;height:200px}
+    .chart-bar{position:absolute;bottom:0;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:4px 4px 0 0;transition:height .3s;min-width:4px}
+    .chart-bar:hover{opacity:.8}
+    .chart-labels{display:flex;justify-content:space-between;margin-top:8px}
+    .chart-labels span{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+    .chart-tooltip{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;pointer-events:none;display:none;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+
+    /* Format Stats */
+    .format-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+    .format-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:12px}
+    .format-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:18px}
+    .format-icon.landscape{background:color-mix(in srgb,var(--blue) 10%,transparent);color:var(--blue)}
+    .format-icon.portrait{background:color-mix(in srgb,var(--purple) 10%,transparent);color:var(--purple)}
+    .format-count{font-size:20px;font-weight:800}
+
+    /* History Table */
+    .history-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .history-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+    .history-title{font-size:16px;font-weight:700}
+    .history-table{width:100%;border-collapse:collapse}
+    .history-table th{text-align:left;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface2)}
+    .history-table td{padding:12px 20px;border-bottom:1px solid var(--border);font-size:13px}
+    .history-table tr:last-child td{border-bottom:none}
+    .history-table tr:hover td{background:var(--surface2)}
+    .status-badge{display:inline-flex;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600}
+    .status-badge.completed{background:color-mix(in srgb,var(--green) 10%,transparent);color:var(--green)}
+    .status-badge.failed{background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--accent)}
+    .status-badge.exporting{background:color-mix(in srgb,var(--blue) 10%,transparent);color:var(--blue)}
+    .re-download{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500}
+    .re-download:hover{text-decoration:underline}
+
+    /* Activity */
+    .activity-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+    .activity-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+    .activity-item:last-child{border-bottom:none}
+    .activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .activity-dot.export{background:var(--green)}
+    .activity-dot.coupon{background:var(--purple)}
+    .activity-dot.upgrade{background:var(--blue)}
+    .activity-text{font-size:13px;flex:1}
+    .activity-time{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/app.html" class="back">← Dashboard</a>
+    <span style="font-weight:700;font-size:16px">Analytics</span>
+    <div></div>
+  </div>
+</nav>
+
+<main>
+  <h1>Analytics</h1>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Clips</div>
+      <div class="stat-value accent" id="sTotalClips">—</div>
+      <div class="stat-sub" id="sCompleted"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Credits Tersisa</div>
+      <div class="stat-value green" id="sCredits">—</div>
+      <div class="stat-sub" id="sCreditsReset"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Credits Used</div>
+      <div class="stat-value blue" id="sCreditsUsed">—</div>
+      <div class="stat-sub">bulan ini</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Spending</div>
+      <div class="stat-value purple" id="sSpent">—</div>
+      <div class="stat-sub" id="sPayments"></div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-section">
+    <div class="chart-header">
+      <div class="chart-title">Clips per Hari (30 hari terakhir)</div>
+    </div>
+    <div class="chart-container" id="chart"></div>
+    <div class="chart-labels" id="chartLabels"></div>
+  </div>
+
+  <!-- Format Stats -->
+  <div class="format-grid">
+    <div class="format-card">
+      <div class="format-icon landscape">🖥</div>
+      <div>
+        <div class="stat-label">Landscape</div>
+        <div class="format-count" id="sLandscape">0</div>
+      </div>
+    </div>
+    <div class="format-card">
+      <div class="format-icon portrait">📱</div>
+      <div>
+        <div class="stat-label">Portrait</div>
+        <div class="format-count" id="sPortrait">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="history-section">
+    <div class="history-header">
+      <div class="history-title">Export History</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="history-table">
+        <thead><tr><th>Title</th><th>Format</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody id="historyBody"><tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Activity -->
+  <div class="activity-section" style="margin-top:24px">
+    <div style="font-size:16px;font-weight:700;margin-bottom:12px">Activity Log</div>
+    <div id="activityList"><div style="text-align:center;padding:20px;color:var(--text3)">Loading...</div></div>
+  </div>
+</main>
+
+<script>
+const TOKEN=localStorage.getItem('token');
+if(!TOKEN)window.location.href='/login.html';
+
+function fmtTime(s){if(s<0)s=0;return[Math.floor(s/3600),Math.floor(s%3600/60),Math.floor(s%60)].map(v=>String(v).padStart(2,'0')).join(':')}
+function fmtDate(d){return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}
+function fmtTimeAgo(d){const ms=Date.now()-new Date(d);if(ms<60000)return'baru saja';if(ms<3600000)return Math.floor(ms/60000)+'m lalu';if(ms<86400000)return Math.floor(ms/3600000)+'h lalu';return Math.floor(ms/86400000)+'d lalu'}
+function fmtRp(n){return 'Rp '+n.toLocaleString('id-ID')}
+
+async function loadStats(){
+  try{
+    const res=await fetch('/api/analytics/stats',{headers:{Authorization:'Bearer '+TOKEN}});
+    const d=await res.json();
+    if(!res.ok)throw new Error(d.error);
+
+    document.getElementById('sTotalClips').textContent=d.totalClips;
+    document.getElementById('sCompleted').textContent=d.completedClips+' selesai';
+    document.getElementById('sCredits').textContent=d.credits;
+    document.getElementById('sCreditsReset').textContent='reset '+fmtDate(d.credits_reset_at);
+    document.getElementById('sCreditsUsed').textContent=d.totalCreditsUsed;
+    document.getElementById('sSpent').textContent=fmtRp(d.totalSpent);
+    document.getElementById('sPayments').textContent=d.totalPayments+' transaksi';
+    document.getElementById('sLandscape').textContent=d.byFormat.landscape;
+    document.getElementById('sPortrait').textContent=d.byFormat.portrait;
+
+    // Chart
+    renderChart(d.clipsByDay);
+  }catch(e){console.error(e)}
+}
+
+function renderChart(data){
+  const entries=Object.entries(data);
+  const max=Math.max(...entries.map(e=>e[1]),1);
+  const chart=document.getElementById('chart');
+  const labels=document.getElementById('chartLabels');
+  chart.innerHTML='';
+  labels.innerHTML='';
+
+  const barWidth=Math.max(4,Math.floor(100/entries.length)-1);
+  entries.forEach(([date,count],i)=>{
+    const h=Math.round((count/max)*180);
+    const bar=document.createElement('div');
+    bar.className='chart-bar';
+    bar.style.left=`${i*(barWidth+1)}%`;
+    bar.style.width=`${barWidth}%`;
+    bar.style.height=`${h}px`;
+    bar.title=`${date}: ${count} clips`;
+    chart.appendChild(bar);
+  });
+
+  // Labels
+  const step=Math.ceil(entries.length/7);
+  entries.forEach(([date],i)=>{
+    if(i%step===0||i===entries.length-1){
+      const s=document.createElement('span');
+      s.textContent=date.slice(5);
+      labels.appendChild(s);
+    }
+  });
+}
+
+async function loadHistory(){
+  try{
+    const res=await fetch('/api/analytics/history',{headers:{Authorization:'Bearer '+TOKEN}});
+    const d=await res.json();
+    if(!res.ok)throw new Error(d.error);
+
+    const body=document.getElementById('historyBody');
+    if(!d.clips.length){body.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">Belum ada export</td></tr>';return}
+
+    body.innerHTML=d.clips.map(c=>`<tr>
+      <td><strong>${c.title||'Clip'}</strong><br><span style="font-size:11px;color:var(--text3)">${fmtTime(c.start_time)} → ${fmtTime(c.end_time)}</span></td>
+      <td>${c.format} ${c.with_subtitles?'+subs':''}</td>
+      <td><span class="status-badge ${c.status}">${c.status}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px">${fmtDate(c.created_at)}</td>
+      <td>${c.status==='completed'?`<span class="re-download" onclick="reDownload('${c.id}','${c.file_url}')">Re-download</span>`:'-'}</td>
+    </tr>`).join('');
+  }catch(e){console.error(e)}
+}
+
+async function loadActivity(){
+  try{
+    const res=await fetch('/api/analytics/activity',{headers:{Authorization:'Bearer '+TOKEN}});
+    const d=await res.json();
+    if(!res.ok)throw new Error(d.error);
+
+    const list=document.getElementById('activityList');
+    if(!d.activity.length){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3)">Belum ada aktivitas</div>';return}
+
+    list.innerHTML=d.activity.map(a=>{
+      const type=a.action==='export'?'export':a.action==='coupon_applied'?'coupon':'export';
+      const desc=a.action==='export'?'Export clip':a.action==='coupon_applied'?'Coupon applied':'Used';
+      return`<div class="activity-item"><div class="activity-dot ${type}"></div><div class="activity-text">${desc} <strong>${a.credits_used} credit${a.credits_used>1?'s':''}</strong></div><div class="activity-time">${fmtTimeAgo(a.created_at)}</div></div>`;
+    }).join('');
+  }catch(e){console.error(e)}
+}
+
+function reDownload(id,fileUrl){
+  if(fileUrl)window.open(fileUrl,'_blank');
+  else toast('File tidak tersedia');
+}
+
+function toast(m){const e=document.createElement('div');e.textContent=m;e.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:13px;font-weight:500;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15)';document.body.appendChild(e);setTimeout(()=>e.remove(),2500)}
+
+loadStats();loadHistory();loadActivity();
+</script>
+</body>
+</html>
