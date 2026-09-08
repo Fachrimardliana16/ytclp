@@ -7,163 +7,314 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg:#fafafa;--surface:#fff;--border:#e4e4e7;--text:#09090b;--text2:#52525b;--text3:#a1a1aa;--accent:#ef4444;--accent-hover:#dc2626;--radius:16px;--radius-sm:10px}
-    @media(prefers-color-scheme:dark){:root{--bg:#09090b;--surface:#18181b;--border:#27272a;--text:#fafafa;--text2:#a1a1aa;--text3:#71717a;--accent:#ef4444;--accent-hover:#dc2626}}
-    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+    :root{
+      --bg:#0a0a0b;--surface:#111113;--surface2:#1a1a1e;--surface3:#222228;
+      --border:#2a2a30;--border-light:#3a3a42;
+      --text:#f5f5f7;--text2:#a1a1aa;--text3:#71717a;
+      --accent:#ef4444;--accent2:#f97316;--accent-glow:rgba(239,68,68,.15);
+      --green:#22c55e;--purple:#a855f7;--blue:#3b82f6;
+      --radius:16px;--radius-sm:10px;--radius-lg:24px;
+    }
+    @media(prefers-color-scheme:light){:root{
+      --bg:#f8f9fa;--surface:#fff;--surface2:#f1f3f5;--surface3:#e9ecef;
+      --border:#dee2e6;--border-light:#ced4da;
+      --text:#212529;--text2:#495057;--text3:#868e96;
+      --accent:#dc2626;--accent2:#ea580c;--accent-glow:rgba(220,38,38,.08);
+    }}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
     a{color:inherit;text-decoration:none}
 
-    /* Nav */
-    nav{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--surface) 80%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-    .nav-inner{max-width:1100px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between}
-    .logo{display:flex;align-items:center;gap:8px}
-    .logo-box{width:32px;height:32px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700}
-    .logo-text{font-weight:700;font-size:17px}
-    .nav-links{display:flex;align-items:center;gap:12px}
-    .nav-links a{font-size:14px;color:var(--text2);transition:color .15s}
+    /* ===== Animated Background ===== */
+    .bg-glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);pointer-events:none;z-index:0;animation:glow-pulse 8s ease-in-out infinite}
+    @keyframes glow-pulse{0%,100%{opacity:.4;transform:translateX(-50%) scale(1)}50%{opacity:.7;transform:translateX(-50%) scale(1.1)}}
+    .bg-grid{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.15;pointer-events:none;z-index:0}
+
+    /* ===== Nav ===== */
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:all .3s}
+    .nav-inner{max-width:1100px;margin:0 auto;padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-box{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+    .logo-text{font-weight:800;font-size:18px;letter-spacing:-.5px}
+    .nav-links{display:flex;align-items:center;gap:16px}
+    .nav-links a{font-size:14px;font-weight:500;color:var(--text2);transition:color .2s}
     .nav-links a:hover{color:var(--text)}
-    .btn-primary{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 16px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:background .15s}
-    .btn-primary:hover{background:var(--accent-hover)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer;font-family:inherit;font-weight:600;transition:all .2s}
+    .btn-accent{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 16px rgba(239,68,68,.3)}
+    .btn-accent:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(239,68,68,.4)}
+    .btn-ghost{background:transparent;border:1.5px solid var(--border-light);color:var(--text)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
 
-    /* Hero */
-    .hero{padding:80px 16px 64px;text-align:center}
-    .hero-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:100px;background:color-mix(in srgb,var(--accent) 8%,transparent);border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);font-size:12px;font-weight:500;color:var(--accent);margin-bottom:24px}
+    /* ===== Hero ===== */
+    .hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 20px 80px;z-index:1}
+    .hero-content{max-width:700px;position:relative}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:100px;background:var(--accent-glow);border:1px solid rgba(239,68,68,.2);font-size:12px;font-weight:600;color:var(--accent);margin-bottom:28px;animation:fadeUp .6s ease}
     .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-    .hero h1{font-size:clamp(32px,6vw,56px);font-weight:900;letter-spacing:-1.5px;line-height:1.1;margin-bottom:20px}
-    .hero h1 span{background:linear-gradient(135deg,var(--accent),#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .hero p{font-size:17px;color:var(--text2);max-width:500px;margin:0 auto 32px}
-    .hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-    .btn-lg{height:48px;padding:0 32px;border-radius:12px;font-size:15px;font-weight:600}
-    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);transition:background .15s}
-    .btn-outline:hover{background:color-mix(in srgb,var(--text) 5%,transparent)}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .hero h1{font-size:clamp(36px,7vw,64px);font-weight:900;letter-spacing:-2px;line-height:1.05;margin-bottom:24px;animation:fadeUp .6s ease .1s both}
+    .hero h1 .gradient{background:linear-gradient(135deg,var(--accent),var(--accent2),#eab308);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200% 200%;animation:gradient-shift 4s ease infinite}
+    @keyframes gradient-shift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    .hero p{font-size:18px;color:var(--text2);max-width:480px;margin:0 auto 40px;line-height:1.7;animation:fadeUp .6s ease .2s both}
+    .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;animation:fadeUp .6s ease .3s both}
+    .btn-xl{height:52px;padding:0 36px;font-size:16px;border-radius:14px}
+    .hero-stats{display:flex;gap:40px;justify-content:center;margin-top:60px;animation:fadeUp .6s ease .4s both}
+    .stat{text-align:center}
+    .stat-num{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums}
+    .stat-num.accent{color:var(--accent)}
+    .stat-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
 
-    /* Section */
-    .section{padding:64px 16px}
-    .section-white{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-    .section-title{font-size:24px;font-weight:800;text-align:center;margin-bottom:48px}
+    /* ===== Floating Elements ===== */
+    .float-card{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;box-shadow:0 8px 32px rgba(0,0,0,.3);animation:float 6s ease-in-out infinite;z-index:2}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    .float-1{top:15%;right:-40px;animation-delay:0s}
+    .float-2{bottom:20%;left:-30px;animation-delay:2s}
+    .float-3{top:40%;left:-50px;animation-delay:4s}
+    .float-inner{display:flex;align-items:center;gap:10px;font-size:13px}
+    .float-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:14px}
+    .float-icon.green{background:rgba(34,197,94,.15);color:var(--green)}
+    .float-icon.purple{background:rgba(168,85,247,.15);color:var(--purple)}
+    .float-icon.blue{background:rgba(59,130,246,.15);color:var(--blue)}
 
-    /* Features */
-    .features{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
-    .feature-card{padding:24px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);transition:border-color .15s}
-    .feature-card:hover{border-color:color-mix(in srgb,var(--accent) 30%,var(--border))}
-    .feature-icon{width:40px;height:40px;border-radius:12px;background:color-mix(in srgb,var(--accent) 8%,transparent);display:grid;place-items:center;font-size:18px;margin-bottom:16px}
-    .feature-card h3{font-size:16px;font-weight:700;margin-bottom:8px}
-    .feature-card p{font-size:14px;color:var(--text2);line-height:1.5}
+    /* ===== Section ===== */
+    section{position:relative;z-index:1;padding:100px 20px}
+    .section-title{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-1px;text-align:center;margin-bottom:16px}
+    .section-sub{text-align:center;color:var(--text2);font-size:16px;max-width:500px;margin:0 auto 60px}
 
-    /* Steps */
-    .steps{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:32px}
-    .step{display:flex;gap:16px;align-items:flex-start}
-    .step-num{width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700;flex-shrink:0}
-    .step h3{font-size:16px;font-weight:700;margin-bottom:4px}
+    /* ===== Features ===== */
+    .features{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    @media(max-width:768px){.features{grid-template-columns:1fr}}
+    .feature{padding:32px 24px;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface);position:relative;overflow:hidden;transition:all .3s}
+    .feature:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.2)}
+    .feature::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity .3s}
+    .feature:hover::before{opacity:1}
+    .feature-icon{width:48px;height:48px;border-radius:14px;background:var(--accent-glow);display:grid;place-items:center;font-size:22px;margin-bottom:20px}
+    .feature h3{font-size:18px;font-weight:700;margin-bottom:8px}
+    .feature p{font-size:14px;color:var(--text2);line-height:1.6}
+
+    /* ===== Steps ===== */
+    .steps{max-width:700px;margin:0 auto;position:relative}
+    .steps::before{content:'';position:absolute;left:18px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--accent),var(--accent2),transparent)}
+    .step{display:flex;gap:20px;margin-bottom:40px;position:relative}
+    .step:last-child{margin-bottom:0}
+    .step-num{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;flex-shrink:0;box-shadow:0 4px 16px rgba(239,68,68,.3);z-index:1}
+    .step-content{padding-top:6px}
+    .step h3{font-size:18px;font-weight:700;margin-bottom:4px}
     .step p{font-size:14px;color:var(--text2)}
 
-    /* Pricing */
-    .pricing{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
-    .price-card{padding:32px 24px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);position:relative}
-    .price-card.popular{border:2px solid var(--accent)}
-    .price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:2px 12px;border-radius:100px;background:var(--accent);color:#fff;font-size:11px;font-weight:600;white-space:nowrap}
-    .price-label{font-size:13px;font-weight:600;color:var(--text3);margin-bottom:8px}
+    /* ===== Pricing ===== */
+    .pricing{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+    @media(max-width:768px){.pricing{grid-template-columns:1fr}}
+    .price{padding:32px 24px;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface);position:relative;transition:all .3s}
+    .price:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.2)}
+    .price.popular{border:2px solid var(--accent);background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 5%,var(--surface)),var(--surface))}
+    .price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:100px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 4px 12px rgba(239,68,68,.3)}
+    .price-label{font-size:14px;font-weight:600;color:var(--text3);margin-bottom:8px}
     .price-label.accent{color:var(--accent)}
-    .price-amount{font-size:32px;font-weight:900;margin-bottom:20px}
-    .price-amount span{font-size:13px;font-weight:400;color:var(--text3)}
-    .price-features{list-style:none;margin-bottom:24px;display:flex;flex-direction:column;gap:10px}
-    .price-features li{font-size:14px;color:var(--text2);padding-left:20px;position:relative}
-    .price-features li::before{content:'✓';position:absolute;left:0;color:var(--accent);font-weight:700;font-size:13px}
-    .price-btn{display:block;width:100%;height:40px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;line-height:40px}
-    .price-btn.filled{background:var(--accent);color:#fff;border:none}
-    .price-btn.filled:hover{background:var(--accent-hover)}
-    .price-btn.outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
-    .price-btn.outline:hover{background:color-mix(in srgb,var(--text) 5%,transparent)}
+    .price-amount{font-size:36px;font-weight:900;margin-bottom:4px;letter-spacing:-1px}
+    .price-period{font-size:13px;color:var(--text3);margin-bottom:24px}
+    .price-features{list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:12px}
+    .price-features li{font-size:14px;color:var(--text2);display:flex;align-items:center;gap:10px}
+    .price-features li::before{content:'✓';color:var(--accent);font-weight:700;font-size:13px;width:20px;text-align:center}
+    .price-btn{width:100%;height:44px;border-radius:var(--radius);font-size:14px}
+    .price-btn.filled{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 16px rgba(239,68,68,.3)}
+    .price-btn.filled:hover{box-shadow:0 8px 24px rgba(239,68,68,.4)}
+    .price-btn.ghost{background:transparent;border:1.5px solid var(--border-light);color:var(--text)}
+    .price-btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
 
-    /* Footer */
-    footer{padding:32px 16px;text-align:center;font-size:13px;color:var(--text3);border-top:1px solid var(--border)}
+    /* ===== CTA ===== */
+    .cta{text-align:center;position:relative}
+    .cta-box{max-width:600px;margin:0 auto;padding:60px 40px;border-radius:var(--radius-lg);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface));border:1px solid var(--border);position:relative;overflow:hidden}
+    .cta-box::before{content:'';position:absolute;top:-100px;right:-100px;width:300px;height:300px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);pointer-events:none}
+    .cta h2{font-size:28px;font-weight:900;margin-bottom:12px;position:relative}
+    .cta p{color:var(--text2);margin-bottom:28px;position:relative}
+    .cta .btn{position:relative}
+
+    /* ===== Footer ===== */
+    footer{position:relative;z-index:1;padding:40px 20px;text-align:center;font-size:13px;color:var(--text3);border-top:1px solid var(--border)}
+
+    /* ===== Scroll Animations ===== */
+    .reveal{opacity:0;transform:translateY(30px);transition:all .6s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
 
     @media(max-width:640px){
-      .hero h1{font-size:28px}
-      .hero p{font-size:15px}
-      .pricing{grid-template-columns:1fr}
+      .hero h1{font-size:28px;letter-spacing:-1px}
+      .hero-stats{gap:24px}
+      .stat-num{font-size:22px}
+      .float-card{display:none}
+      section{padding:60px 16px}
     }
   </style>
 </head>
 <body>
 
+<div class="bg-glow"></div>
+<div class="bg-grid"></div>
+
+<!-- Nav -->
 <nav>
   <div class="nav-inner">
     <a href="/" class="logo"><div class="logo-box">YC</div><span class="logo-text">YT Clipper</span></a>
     <div class="nav-links">
       <a href="/login.html">Login</a>
-      <a href="/register.html" class="btn-primary">Daftar Gratis</a>
+      <a href="/register.html" class="btn btn-accent" style="height:36px;padding:0 18px;font-size:13px;border-radius:10px">Daftar Gratis</a>
     </div>
   </div>
 </nav>
 
+<!-- Hero -->
 <section class="hero">
-  <div class="hero-badge"><span class="dot"></span> Auto Clip Generator</div>
-  <h1>Buat Short Video<br><span>OTOMATIS</span></h1>
-  <p>Paste link YouTube, AI cari momen terbaik, dan download clip siap post ke TikTok, Reels, dan Shorts.</p>
-  <div class="hero-btns">
-    <a href="/register.html" class="btn-primary btn-lg">Mulai Gratis</a>
-    <a href="#pricing" class="btn-outline btn-lg">Lihat Harga</a>
+  <div class="float-card float-1"><div class="float-inner"><div class="float-icon green">✓</div><div><strong>3 clip</strong> exported<br><span style="color:var(--text3);font-size:11px">2 detik lalu</span></div></div></div>
+  <div class="float-card float-2"><div class="float-inner"><div class="float-icon purple">⚡</div><div><strong>AI Score</strong> 94/100<br><span style="color:var(--text3);font-size:11px">highlight detected</span></div></div></div>
+  <div class="float-card float-3"><div class="float-inner"><div class="float-icon blue">📱</div><div><strong>9:16</strong> portrait ready<br><span style="color:var(--text3);font-size:11px">TikTok / Reels</span></div></div></div>
+
+  <div class="hero-content">
+    <div class="hero-badge"><span class="dot"></span> AI-Powered Clip Generator</div>
+    <h1>Buat Short Video<br><span class="gradient">OTOMATIS</span></h1>
+    <p>Paste link YouTube, AI cari momen terbaik, dan download clip siap post ke TikTok, Reels, dan YouTube Shorts.</p>
+    <div class="hero-btns">
+      <a href="/register.html" class="btn btn-accent btn-xl">Mulai Gratis →</a>
+      <a href="#pricing" class="btn btn-ghost btn-xl">Lihat Harga</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num accent">10K+</div><div class="stat-label">Clip Created</div></div>
+      <div class="stat"><div class="stat-num">2.5K</div><div class="stat-label">Active Users</div></div>
+      <div class="stat"><div class="stat-num">98%</div><div class="stat-label">Accuracy</div></div>
+    </div>
   </div>
 </section>
 
-<section class="section section-white">
-  <h2 class="section-title">Kenapa YT Clipper?</h2>
+<!-- Features -->
+<section>
+  <div class="section-title reveal">Kenapa YT Clipper?</div>
+  <div class="section-sub reveal">Semua yang kamu butuhkan untuk bikin short video viral.</div>
   <div class="features">
-    <div class="feature-card">
+    <div class="feature reveal">
       <div class="feature-icon">🎯</div>
       <h3>AI Highlight Detection</h3>
-      <p>Otomatis temukan momen paling menarik dari video panjang.</p>
+      <p>Transcript dianalisa otomatis. Momen paling menarik langsung di-skor dan dipilih.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature reveal">
       <div class="feature-icon">📱</div>
       <h3>Format 9:16 Portrait</h3>
-      <p>Langsung siap untuk TikTok, Reels, dan YouTube Shorts.</p>
+      <p>Export langsung dalam format vertikal. Siap upload ke TikTok, Reels, Shorts.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature reveal">
       <div class="feature-icon">💬</div>
       <h3>Auto Subtitle</h3>
-      <p>Caption otomatis dari transcript, bilingual Indonesia & Inggris.</p>
+      <p>Caption otomatis dari transcript. Bilingual Indonesia & English.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">⚡</div>
+      <h3>Fast Export</h3>
+      <p>Render clip dalam hitungan detik. Tidak perlu nunggu lama.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">🎨</div>
+      <h3>Custom Templates</h3>
+      <p>Pilih style caption dan overlay yang cocok dengan brand kamu.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">📊</div>
+      <h3>Smart Scoring</h3>
+      <p>Setiap momen di-skor berdasarkan engagement potential. Pilih yang terbaik.</p>
     </div>
   </div>
 </section>
 
-<section class="section">
-  <h2 class="section-title">Cara Kerja</h2>
+<!-- How it works -->
+<section>
+  <div class="section-title reveal">Cara Kerja</div>
+  <div class="section-sub reveal">3 langkah saja, clip sudah siap.</div>
   <div class="steps">
-    <div class="step"><div class="step-num">1</div><div><h3>Paste Link YouTube</h3><p>Masukkan URL video YouTube yang ingin di-clip.</p></div></div>
-    <div class="step"><div class="step-num">2</div><div><h3>AI Analisa & Pilih Momen</h3><p>Sistem kami analisa transcript dan temukan highlight terbaik.</p></div></div>
-    <div class="step"><div class="step-num">3</div><div><h3>Pilih & Export</h3><p>Pilih clip, pilih format (landscape/portrait), langsung download.</p></div></div>
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Paste Link YouTube</h3>
+        <p>Masukkan URL video YouTube yang ingin di-clip. Kami akan download dan analisa otomatis.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>AI Pilih Momen Terbaik</h3>
+        <p>Transcript dianalisa, momen paling menarik di-skor dan ditampilkan berdasarkan engagement.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Pilih & Export</h3>
+        <p>Pilih clip, pilih format (landscape/portrait), tambahkan subtitle, langsung download.</p>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="section section-white" id="pricing">
-  <h2 class="section-title">Harga</h2>
-  <p style="text-align:center;color:var(--text2);margin:-32px auto 48px;font-size:15px">Mulai gratis, upgrade kalau butuh lebih.</p>
+<!-- Pricing -->
+<section id="pricing">
+  <div class="section-title reveal">Harga</div>
+  <div class="section-sub reveal">Mulai gratis. Upgrade kalau butuh lebih.</div>
   <div class="pricing">
-    <div class="price-card">
+    <div class="price reveal">
       <div class="price-label">Free</div>
-      <div class="price-amount">Rp 0<span>/bulan</span></div>
-      <ul class="price-features"><li>10 clip/bulan</li><li>Watermark 10%</li><li>720p output</li><li>Basic templates</li></ul>
-      <a href="/register.html" class="price-btn outline">Mulai Gratis</a>
+      <div class="price-amount">Rp 0</div>
+      <div class="price-period">selamanya</div>
+      <ul class="price-features">
+        <li>10 clip / bulan</li>
+        <li>Watermark 10%</li>
+        <li>720p output</li>
+        <li>Basic templates</li>
+      </ul>
+      <a href="/register.html" class="btn price-btn ghost">Mulai Gratis</a>
     </div>
-    <div class="price-card popular">
-      <div class="price-badge">Populer</div>
+    <div class="price popular reveal">
+      <div class="price-badge">⭐ Populer</div>
       <div class="price-label accent">Pro</div>
-      <div class="price-amount">Rp 99k<span>/bulan</span></div>
-      <ul class="price-features"><li>100 clip/bulan</li><li>Tanpa watermark</li><li>1080p output</li><li>Semua templates</li><li>Custom captions</li><li>Priority support</li></ul>
-      <a href="/register.html?plan=pro" class="price-btn filled">Pilih Pro</a>
+      <div class="price-amount">Rp 99k</div>
+      <div class="price-period">per bulan</div>
+      <ul class="price-features">
+        <li>100 clip / bulan</li>
+        <li>Tanpa watermark</li>
+        <li>1080p output</li>
+        <li>Semua templates</li>
+        <li>Custom captions</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="/register.html?plan=pro" class="btn price-btn filled">Pilih Pro</a>
     </div>
-    <div class="price-card">
+    <div class="price reveal">
       <div class="price-label">Business</div>
-      <div class="price-amount">Rp 299k<span>/bulan</span></div>
-      <ul class="price-features"><li>500 clip/bulan</li><li>Semua fitur Pro</li><li>4K output</li><li>API access</li><li>Batch export</li><li>Team management</li></ul>
-      <a href="/register.html?plan=business" class="price-btn outline">Pilih Business</a>
+      <div class="price-amount">Rp 299k</div>
+      <div class="price-period">per bulan</div>
+      <ul class="price-features">
+        <li>500 clip / bulan</li>
+        <li>Semua fitur Pro</li>
+        <li>4K output</li>
+        <li>API access</li>
+        <li>Batch export</li>
+        <li>Team management</li>
+      </ul>
+      <a href="/register.html?plan=business" class="btn price-btn ghost">Pilih Business</a>
     </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta-box reveal">
+    <h2>Siap Bikin Short Video?</h2>
+    <p>Mulai gratis sekarang. Tidak perlu kartu kredit.</p>
+    <a href="/register.html" class="btn btn-accent btn-xl">Daftar Gratis →</a>
   </div>
 </section>
 
 <footer>&copy; 2026 YT Clipper. All rights reserved.</footer>
+
+<script>
+// Scroll reveal
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+</script>
 
 </body>
 </html>
