@@ -465,10 +465,22 @@ app.get('/api/debug', (req, res) => {
   res.json({ hasYtdlp, hasFfmpeg: !!hasFFmpeg, downloadsDir: userDownloads, tmpDir, jobs: jobs.size });
 });
 
+// ===== Request logger =====
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const ms = Date.now() - start;
+    if (req.url.startsWith('/api/')) {
+      console.log(`  ${req.method} ${req.url} ${res.statusCode} ${ms}ms`);
+    }
+  });
+  next();
+});
+
 // ===== Global error handler =====
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err.message);
-  res.status(500).json({ error: 'Internal server error' });
+  console.error('Unhandled error:', err.message, err.stack);
+  res.status(500).json({ error: 'Internal server error', id: require('crypto').randomBytes(8).toString('hex') });
 });
 
 app.get('*', (req, res) => {
