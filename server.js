@@ -51,8 +51,10 @@ app.use((req, res, next) => {
 // ===== Auth =====
 const { authMiddleware } = require('./auth/middleware');
 const authRoutes = require('./auth/routes');
+const paymentRoutes = require('./payment/routes');
 app.use(authMiddleware); // must be BEFORE auth routes
 app.use('/api/auth', authRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // ===== Transcript cache (avoids re-fetching same video) =====
 const transcriptCache = new Map(); // videoId -> {segments, title, ts}

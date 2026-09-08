@@ -89,6 +89,46 @@ router.put('/me', requireAuth, async (req, res) => {
   }
 });
 
+// ===== Google OAuth =====
+router.post('/google', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ error: 'Google credential required' });
+
+    // Verify Google token (decode JWT without library)
+    const payload = (() => {
+      try {
+        const [, body] = credential.split('.');
+        return JSON.parse(Buffer.from(body, 'base64url').toString());
+      } catch { return null; }
+    })();
+    if (!payload?.email) return res.status(401).json({ error: 'Invalid Google token' });
+
+    const { email, name, picture } = payload;
+
+    // Find or create user
+    let user = await db.findBy('users', 'email', email);
+    if (!user) {
+      user = await db.insert('users', {
+        email,
+        name: name || email.split('@')[0],
+        avatar_url: picture,
+        plan: 'free',
+        credits: 10,
+        credits_used: 0,
+      });
+    } else if (!user.avatar_url && picture) {
+      await db.update('users', user.id, { avatar_url: picture });
+    }
+
+    const token = signJWT({ sub: user.id, email: user.email });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, credits: user.credits } });
+  } catch (err) {
+    console.error('Google auth error:', err.message);
+    res.status(500).json({ error: 'Gagal autentikasi Google' });
+  }
+});
+
 // ===== Usage stats =====
 router.get('/usage', requireAuth, async (req, res) => {
   try {
