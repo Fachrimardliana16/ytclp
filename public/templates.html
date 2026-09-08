@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Templates — YT Clipper</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#fafafa;--surface:#fff;--surface2:#f4f4f5;--border:#e4e4e7;--text:#09090b;--text2:#52525b;--text3:#a1a1aa;--accent:#ef4444;--accent2:#f97316;--green:#22c55e;--radius:14px;--radius-sm:10px}
+    @media(prefers-color-scheme:dark){:root{--bg:#09090b;--surface:#18181b;--surface2:#27272a;--border:#2e2e32;--text:#f5f5f7;--text2:#a1a1aa;--text3:#71717a;--accent:#ef4444;--accent2:#f97316;--green:#22c55e}}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    nav{border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:50}
+    .nav-inner{max-width:1000px;margin:0 auto;padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between}
+    .back{font-size:14px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:6px}
+    .back:hover{color:var(--text)}
+    main{max-width:1000px;margin:0 auto;padding:24px 16px 80px}
+    h1{font-size:24px;font-weight:800;margin-bottom:24px}
+
+    /* Tabs */
+    .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface2);border-radius:var(--radius-sm);padding:4px}
+    .tab{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--text2)}
+    .tab.active{background:var(--surface);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+    .tab:hover{color:var(--text)}
+    .panel{display:none}
+    .panel.active{display:block}
+
+    /* Caption Presets */
+    .presets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+    .preset{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .15s;position:relative}
+    .preset:hover{border-color:color-mix(in srgb,var(--accent) 30%,var(--border))}
+    .preset.selected{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+    .preset-preview{height:80px;border-radius:8px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;position:relative}
+    .preset-name{font-size:14px;font-weight:600;margin-bottom:2px}
+    .preset-meta{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+
+    /* Brand Kit */
+    .brand-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+    .brand-section h3{font-size:16px;font-weight:700;margin-bottom:16px}
+    .brand-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+    .brand-field{flex:1;min-width:200px}
+    .brand-field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px}
+    .brand-field input[type="text"],.brand-field select{width:100%;height:40px;padding:0 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none}
+    .brand-field input[type="color"]{width:40px;height:40px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:transparent;padding:2px}
+    .brand-field input[type="file"]{display:none}
+    .brand-upload{display:flex;align-items:center;gap:12px;padding:16px;border:2px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .15s}
+    .brand-upload:hover{border-color:var(--accent)}
+    .brand-upload span{font-size:13px;color:var(--text2)}
+    .brand-preview{width:48px;height:48px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .brand-preview img{width:100%;height:100%;object-fit:cover}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:inherit}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+    .btn-primary:hover{opacity:.9}
+    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+
+    /* Resolution/Format */
+    .option-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .option-pill{padding:6px 14px;border-radius:100px;border:1.5px solid var(--border);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;background:transparent;color:var(--text2)}
+    .option-pill:hover{border-color:var(--accent);color:var(--accent)}
+    .option-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+    /* Save indicator */
+    .saved{display:none;font-size:13px;color:var(--green);margin-left:12px}
+    .saved.show{display:inline}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/app.html" class="back">← Dashboard</a>
+    <span style="font-weight:700;font-size:16px">Templates & Brand</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="saveStatus" class="saved show">✓ Tersimpan</span>
+      <button class="btn btn-primary" onclick="saveAll()">Simpan</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <h1>Templates & Branding</h1>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('captions')">Caption Style</div>
+    <div class="tab" onclick="switchTab('export')">Export Settings</div>
+    <div class="tab" onclick="switchTab('brand')">Brand Kit</div>
+  </div>
+
+  <!-- Captions Panel -->
+  <div id="captionsPanel" class="panel active">
+    <div class="presets-grid" id="presetsGrid"></div>
+  </div>
+
+  <!-- Export Panel -->
+  <div id="exportPanel" class="panel">
+    <div class="brand-section">
+      <h3>Resolusi</h3>
+      <div class="option-group" id="resOptions"></div>
+    </div>
+    <div class="brand-section">
+      <h3>Format</h3>
+      <div class="option-group" id="fmtOptions"></div>
+    </div>
+    <div class="brand-section">
+      <h3>Platform</h3>
+      <div class="option-group" id="platOptions"></div>
+    </div>
+  </div>
+
+  <!-- Brand Panel -->
+  <div id="brandPanel" class="panel">
+    <div class="brand-section">
+      <h3>Logo / Watermark</h3>
+      <div class="brand-upload" onclick="document.getElementById('logoInput').click()">
+        <div class="brand-preview" id="logoPreview"><span style="font-size:20px">🏷️</span></div>
+        <div><span>Upload logo untuk watermark</span><br><span style="font-size:11px;color:var(--text3)">PNG/SVG, max 2MB</span></div>
+        <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(this)">
+      </div>
+    </div>
+    <div class="brand-section">
+      <h3>Warna Brand</h3>
+      <div class="brand-row">
+        <div class="brand-field">
+          <label>Warna Teks</label>
+          <input type="color" id="brandTextColor" value="#FFFFFF">
+        </div>
+        <div class="brand-field">
+          <label>Warna Stroke</label>
+          <input type="color" id="brandStrokeColor" value="#000000">
+        </div>
+        <div class="brand-field">
+          <label>Warna Background</label>
+          <input type="color" id="brandBgColor" value="#000000">
+        </div>
+        <div class="brand-field">
+          <label>Background Opacity</label>
+          <select id="brandBgOpacity">
+            <option value="0">Transparan</option>
+            <option value="0.3">30%</option>
+            <option value="0.5">50%</option>
+            <option value="0.8">80%</option>
+            <option value="1">Solid</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="brand-section">
+      <h3>Font</h3>
+      <div class="brand-row">
+        <div class="brand-field">
+          <label>Font Caption</label>
+          <select id="brandFont">
+            <option value="Impact">Impact</option>
+            <option value="Arial">Arial</option>
+            <option value="Helvetica Neue">Helvetica Neue</option>
+            <option value="Roboto">Roboto</option>
+            <option value="Montserrat">Montserrat</option>
+            <option value="Poppins">Poppins</option>
+            <option value="Orbitron">Orbitron</option>
+            <option value="Caveat">Caveat</option>
+            <option value="Pacifico">Pacifico</option>
+            <option value="Press Start 2P">Press Start 2P</option>
+          </select>
+        </div>
+        <div class="brand-field">
+          <label>Ukuran Font</label>
+          <select id="brandFontSize">
+            <option value="small">Kecil</option>
+            <option value="medium" selected>Sedang</option>
+            <option value="large">Besar</option>
+          </select>
+        </div>
+        <div class="brand-field">
+          <label>Stroke Width</label>
+          <select id="brandStrokeWidth">
+            <option value="0">Tanpa stroke</option>
+            <option value="1">1px</option>
+            <option value="2">2px</option>
+            <option value="3" selected>3px</option>
+            <option value="4">4px</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="brand-section">
+      <h3>Animasi Caption</h3>
+      <div class="option-group" id="animOptions">
+        <div class="option-pill active" data-val="none">Tanpa</div>
+        <div class="option-pill" data-val="fade">Fade</div>
+        <div class="option-pill" data-val="bounce">Bounce</div>
+        <div class="option-pill" data-val="typewriter">Typewriter</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const TOKEN=localStorage.getItem('token');
+if(!TOKEN)window.location.href='/login.html';
+
+let settings={
+  captionPreset:'tiktok-bold',
+  resolution:'1080p',
+  format:'mp4',
+  platform:'tiktok',
+  brand:{textColor:'#FFFFFF',strokeColor:'#000000',bgColor:'#000000',bgOpacity:0,font:'Impact',fontSize:'medium',strokeWidth:3,animation:'none',logo:null}
+};
+
+// Load from localStorage
+try{Object.assign(settings,JSON.parse(localStorage.getItem('ytclipper_settings')||'{}'));if(settings.brand)Object.assign(settings.brand,JSON.parse(localStorage.getItem('ytclipper_brand')||'{}'));}catch{}
+
+// Tabs
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById(tab+'Panel').classList.add('active');
+}
+
+// Load presets
+async function loadPresets(){
+  try{
+    const res=await fetch('/api/templates/captions');
+    const data=await res.json();
+    const grid=document.getElementById('presetsGrid');
+    grid.innerHTML=data.presets.map(p=>`
+      <div class="preset ${settings.captionPreset===p.id?'selected':''}" onclick="selectPreset('${p.id}')" data-id="${p.id}">
+        <div class="preset-preview" style="background:${p.bgColor||'#1a1a2e'};color:${p.color};font-family:'${p.font}',sans-serif;font-size:${p.fontSize==='large'?'20px':p.fontSize==='small'?'11px':'14px'};${p.strokeWidth?`-webkit-text-stroke:${p.strokeWidth}px ${p.strokeColor}`:''}">${p.name}</div>
+        <div class="preset-name">${p.name}</div>
+        <div class="preset-meta">${p.platform} · ${p.animation}</div>
+      </div>
+    `).join('');
+  }catch{}
+}
+
+function selectPreset(id){
+  settings.captionPreset=id;
+  document.querySelectorAll('.preset').forEach(p=>p.classList.toggle('selected',p.dataset.id===id));
+  saveSettings();
+}
+
+// Load resolutions/formats/platforms
+async function loadOptions(){
+  try{
+    const [resRes,resFmt,resPlat]=await Promise.all([
+      fetch('/api/templates/resolutions').then(r=>r.json()),
+      fetch('/api/templates/formats').then(r=>r.json()),
+      fetch('/api/templates/platforms').then(r=>r.json()),
+    ]);
+    document.getElementById('resOptions').innerHTML=resRes.resolutions.map(r=>`<div class="option-pill ${settings.resolution===r.id?'active':''}" onclick="selectOption('resolution','${r.id}')" data-val="${r.id}">${r.label}</div>`).join('');
+    document.getElementById('fmtOptions').innerHTML=resFmt.formats.map(f=>`<div class="option-pill ${settings.format===f.id?'active':''}" onclick="selectOption('format','${f.id}')" data-val="${f.id}">${f.label}</div>`).join('');
+    document.getElementById('platOptions').innerHTML=resPlat.platforms.map(p=>`<div class="option-pill ${settings.platform===p.id?'active':''}" onclick="selectOption('platform','${p.id}')" data-val="${p.id}">${p.label}</div>`).join('');
+  }catch{}
+}
+
+function selectOption(key,val){
+  settings[key]=val;
+  const groupId=key==='resolution'?'resOptions':key==='format'?'fmtOptions':'platOptions';
+  document.querySelectorAll(`#${groupId} .option-pill`).forEach(p=>p.classList.toggle('active',p.dataset.val===val));
+  saveSettings();
+}
+
+// Animation options
+document.querySelectorAll('#animOptions .option-pill').forEach(p=>{
+  p.onclick=()=>{settings.brand.animation=p.dataset.val;document.querySelectorAll('#animOptions .option-pill').forEach(x=>x.classList.toggle('active',x.dataset.val===p.dataset.val));saveSettings()};
+});
+
+// Brand kit inputs
+function loadBrand(){
+  document.getElementById('brandTextColor').value=settings.brand.textColor;
+  document.getElementById('brandStrokeColor').value=settings.brand.strokeColor;
+  document.getElementById('brandBgColor').value=settings.brand.bgColor;
+  document.getElementById('brandBgOpacity').value=settings.brand.bgOpacity;
+  document.getElementById('brandFont').value=settings.brand.font;
+  document.getElementById('brandFontSize').value=settings.brand.fontSize;
+  document.getElementById('brandStrokeWidth').value=settings.brand.strokeWidth;
+  ['brandTextColor','brandStrokeColor','brandBgColor','brandBgOpacity','brandFont','brandFontSize','brandStrokeWidth'].forEach(id=>{
+    document.getElementById(id).onchange=()=>{settings.brand[id.replace('brand','').charAt(0).toLowerCase()+id.slice(5).replace(/([A-Z])/g,(m)=>m.toLowerCase())]=document.getElementById(id).value;saveSettings()};
+  });
+  if(settings.brand.logo){
+    document.getElementById('logoPreview').innerHTML=`<img src="${settings.brand.logo}">`;
+  }
+}
+
+function handleLogo(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    settings.brand.logo=e.target.result;
+    document.getElementById('logoPreview').innerHTML=`<img src="${e.target.result}">`;
+    saveSettings();
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveSettings(){
+  localStorage.setItem('ytclipper_settings',JSON.stringify({...settings,brand:undefined}));
+  localStorage.setItem('ytclipper_brand',JSON.stringify(settings.brand));
+  const s=document.getElementById('saveStatus');s.classList.add('show');
+  setTimeout(()=>s.classList.remove('show'),2000);
+}
+
+function saveAll(){saveSettings();toast('Tersimpan!')}
+
+function toast(m){const e=document.createElement('div');e.textContent=m;e.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:13px;font-weight:500;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15)';document.body.appendChild(e);setTimeout(()=>e.remove(),2500)}
+
+// Init
+loadPresets();loadOptions();loadBrand();
+</script>
+</body>
+</html>
