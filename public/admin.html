@@ -262,6 +262,9 @@
     }
 
     function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/login.html'; }
+    // Redirect non-admin
+    const u = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!u || u.role !== 'admin') { window.location.href = '/login.html'; }
 
     window.onload = async () => { await loadDashboard(); await loadUsers(); await loadCoupons(); switchTab(0); };
   </script>
