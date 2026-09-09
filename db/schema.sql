@@ -11,12 +11,14 @@ CREATE TABLE users (
   name VARCHAR(255),
   avatar_url TEXT,
   plan VARCHAR(20) DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'business')),
+  role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   credits INT DEFAULT 10, -- free: 10/bulan, pro: 100, business: 500
   credits_used INT DEFAULT 0,
   credits_reset_at TIMESTAMP DEFAULT (DATE_TRUNC('month', NOW()) + INTERVAL '1 month'),
   stripe_customer_id VARCHAR(255),
   stripe_subscription_id VARCHAR(255),
   password_hash VARCHAR(255), -- NULL for OAuth-only users
+  api_key VARCHAR(100) UNIQUE, -- untuk API v1 access
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -90,6 +92,19 @@ CREATE TABLE coupons (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- ===== Settings (admin-configurable, DB-backed) =====
+CREATE TABLE settings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  key VARCHAR(100) UNIQUE NOT NULL,
+  value TEXT,
+  is_json BOOLEAN DEFAULT false,
+  autoload BOOLEAN DEFAULT true,
+  category VARCHAR(50) DEFAULT 'general',
+  updated_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
 -- ===== Indexes =====
 CREATE INDEX idx_projects_user ON projects(user_id);
 CREATE INDEX idx_projects_status ON projects(status);
@@ -100,6 +115,9 @@ CREATE INDEX idx_usage_created ON usage_log(created_at);
 CREATE INDEX idx_payments_user ON payments(user_id);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_stripe ON users(stripe_customer_id);
+CREATE INDEX idx_users_api_key ON users(api_key);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_settings_key ON settings(key);
 
 -- ===== Function: Reset monthly credits =====
 CREATE OR REPLACE FUNCTION reset_monthly_credits()
@@ -117,3 +135,4 @@ BEGIN
   WHERE credits_reset_at <= NOW();
 END;
 $$ LANGUAGE plpgsql;
+

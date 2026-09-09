@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — YT Clipper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="/manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+    .tab-active { border-bottom: 3px solid #ef4444; }
+    .badge { font-size: 0.75rem; padding: 0.25rem 0.75rem; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200">
+  <div class="flex h-screen">
+    <!-- Sidebar Admin -->
+    <div class="w-72 bg-zinc-900 border-r border-zinc-800 p-6 flex flex-col">
+      <div class="flex items-center gap-3 mb-12">
+        <div class="w-10 h-10 bg-red-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl">YC</div>
+        <div>
+          <h1 class="text-2xl font-bold">Admin Panel</h1>
+          <p class="text-xs text-zinc-500">YT Clipper</p>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <a onclick="switchTab(0)" class="tab flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-zinc-800 cursor-pointer tab-active" id="tab-0">
+          <span class="text-xl">📊</span>
+          <span class="font-medium">Dashboard</span>
+        </a>
+        <a onclick="switchTab(1)" class="tab flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-zinc-800 cursor-pointer" id="tab-1">
+          <span class="text-xl">💰</span>
+          <span class="font-medium">Settings & Pricing</span>
+        </a>
+        <a onclick="switchTab(2)" class="tab flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-zinc-800 cursor-pointer" id="tab-2">
+          <span class="text-xl">👥</span>
+          <span class="font-medium">Users</span>
+        </a>
+        <a onclick="switchTab(3)" class="tab flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-zinc-800 cursor-pointer" id="tab-3">
+          <span class="text-xl">🎟️</span>
+          <span class="font-medium">Coupons</span>
+        </a>
+        <a onclick="switchTab(4)" class="tab flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-zinc-800 cursor-pointer" id="tab-4">
+          <span class="text-xl">🔑</span>
+          <span class="font-medium">API Keys</span>
+        </a>
+      </div>
+
+      <div class="mt-auto pt-8 border-t border-zinc-800">
+        <div onclick="logout()" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-red-600/10 text-red-400 cursor-pointer">
+          <span class="text-xl">🚪</span>
+          <span class="font-medium">Logout</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto p-8">
+      <!-- Tab Dashboard -->
+      <div id="content-0">
+        <h2 class="text-3xl font-bold mb-8">Dashboard Admin</h2>
+        <div class="grid grid-cols-4 gap-6">
+          <div class="card bg-zinc-900 rounded-3xl p-6">
+            <div class="text-sm text-zinc-400">Total Users</div>
+            <div id="stat-users" class="text-5xl font-bold mt-2">248</div>
+          </div>
+          <div class="card bg-zinc-900 rounded-3xl p-6">
+            <div class="text-sm text-zinc-400">Total Clips</div>
+            <div id="stat-clips" class="text-5xl font-bold mt-2">1,284</div>
+          </div>
+          <div class="card bg-zinc-900 rounded-3xl p-6">
+            <div class="text-sm text-zinc-400">MRR</div>
+            <div class="text-5xl font-bold mt-2">Rp 12.8jt</div>
+          </div>
+          <div class="card bg-zinc-900 rounded-3xl p-6">
+            <div class="text-sm text-zinc-400">Active Pro</div>
+            <div class="text-5xl font-bold mt-2">42</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Settings -->
+      <div id="content-1" class="hidden">
+        <h2 class="text-3xl font-bold mb-8">Settings & Pricing</h2>
+        <div class="bg-zinc-900 rounded-3xl p-8">
+          <div class="grid grid-cols-2 gap-8">
+            <div>
+              <h3 class="text-lg font-semibold mb-4">AI Configuration</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm text-zinc-400 mb-2">OpenRouter API Key</label>
+                  <input id="ai-key" type="password" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm text-zinc-400 mb-2">Model</label>
+                  <select id="ai-model" class="w-full bg-zinc-800 border border zinc-700 rounded-2xl px-4 py-3 text-sm">
+                    <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (Free)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Payment Gateway</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm text-zinc-400 mb-2">Stripe Secret Key</label>
+                  <input id="stripe-key" type="password" class="w-full bg-zinc-800 border border zinc-700 rounded-2xl px-4 py-3 text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm text-zinc-400 mb-2">Stripe Price Pro</label>
+                  <input id="stripe-pro-price" value="price_pro_monthly" class="w-full bg-zinc-800 border border zinc-700 rounded-2xl px-4 py-3 text-sm">
+                </div>
+              </div>
+            </div>
+          </div>
+          <button onclick="saveSettings()" class="mt-8 bg-red-600 hover:bg-red-700 px-8 py-3 rounded-2xl font-semibold">Save Settings</button>
+        </div>
+      </div>
+
+      <!-- Tab Users -->
+      <div id="content-2" class="hidden">
+        <h2 class="text-3xl font-bold mb-8">Users Management</h2>
+        <div id="users-table" class="bg-zinc-900 rounded-3xl overflow-hidden">
+          <!-- Table will be populated by JS -->
+        </div>
+      </div>
+
+      <!-- Tab Coupons -->
+      <div id="content-3" class="hidden">
+        <h2 class="text-3xl font-bold mb-8">Coupons Management</h2>
+        <button onclick="showNewCouponModal()" class="bg-white text-black px-6 py-3 rounded-2xl font-semibold mb-6">+ New Coupon</button>
+        <div id="coupons-table" class="bg-zinc-900 rounded-3xl overflow-hidden">
+          <!-- Table populated by JS -->
+        </div>
+      </div>
+
+      <!-- Tab API Keys -->
+      <div id="content-4" class="hidden">
+        <h2 class="text-3xl font-bold mb-8">API Keys</h2>
+        <div class="grid grid-cols-2 gap-6" id="api-keys-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TOKEN = localStorage.getItem('token');
+    if (!TOKEN) window.location.href = '/login.html';
+    function authHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN }; }
+
+    let currentTab = 0;
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((el, i) => {
+        if (i === tab) { el.classList.add('tab-active', 'bg-zinc-800'); }
+        else { el.classList.remove('tab-active', 'bg-zinc-800'); }
+      });
+      for (let i = 0; i <= 4; i++) document.getElementById('content-' + i).classList.toggle('hidden', tab !== i);
+      currentTab = tab;
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch('/api/admin' + path, { headers: authHeaders(), ...opts });
+      if (res.status === 401 || res.status === 403) { alert('Akses ditolak. Login sebagai admin.'); window.location.href = '/login.html'; return null; }
+      return res.json();
+    }
+
+    async function loadDashboard() {
+      const data = await api('/stats');
+      if (!data) return;
+      document.getElementById('stat-users').textContent = data.users?.total || 0;
+      document.getElementById('stat-clips').textContent = data.clips?.total || 0;
+    }
+
+    async function loadUsers() {
+      const data = await api('/users');
+      if (!data) return;
+      const users = data.users || [];
+      document.getElementById('users-table').innerHTML = `
+        <table class="w-full text-left"><thead><tr class="border-b border-zinc-700">
+          <th class="p-4">Email</th><th class="p-4">Plan</th><th class="p-4">Role</th><th class="p-4">Credits</th><th class="p-4">API Key</th><th class="p-4">Actions</th>
+        </tr></thead><tbody>
+        ${users.map(u => `<tr class="border-b border-zinc-800 hover:bg-zinc-800">
+          <td class="p-4">${u.email}</td>
+          <td class="p-4"><span class="badge bg-emerald-900 text-emerald-400">${u.plan}</span></td>
+          <td class="p-4">${u.role||'user'}</td>
+          <td class="p-4">${u.credits}</td>
+          <td class="p-4 text-xs font-mono text-zinc-400">${u.api_key ? u.api_key.substring(0,12)+'...' : '-'}</td>
+          <td class="p-4 flex gap-2">
+            <button onclick="editUser('${u.id}')" class="text-blue-400 hover:text-blue-300 text-sm">Edit</button>
+            <button onclick="regenerateKey('${u.id}')" class="text-amber-400 hover:text-amber-300 text-sm">Re-key</button>
+            <button onclick="deleteUser('${u.id}')" class="text-red-400 hover:text-red-300 text-sm">Del</button>
+          </td>
+        </tr>`).join('')}
+        </tbody></table>`;
+    }
+
+    async function loadCoupons() {
+      const data = await api('/coupons');
+      if (!data) return;
+      const coupons = data.coupons || [];
+      document.getElementById('coupons-table').innerHTML = `
+        <table class="w-full text-left"><thead><tr class="border-b border-zinc-700">
+          <th class="p-4">Code</th><th class="p-4">Type</th><th class="p-4">Value</th><th class="p-4">Plan</th><th class="p-4">Bonus</th><th class="p-4">Uses</th><th class="p-4">Active</th><th class="p-4">Actions</th>
+        </tr></thead><tbody>
+        ${coupons.map(c => `<tr class="border-b border-zinc-800 hover:bg-zinc-800">
+          <td class="p-4 font-mono font-bold">${c.code}</td>
+          <td class="p-4">${c.discount_type}</td>
+          <td class="p-4">${c.discount_value}</td>
+          <td class="p-4">${c.plan_override||'-'}</td>
+          <td class="p-4">${c.credits_bonus||0}</td>
+          <td class="p-4">${c.used_count||0}/${c.max_uses||'∞'}</td>
+          <td class="p-4">${c.active?'✓':'✗'}</td>
+          <td class="p-4"><button onclick="deleteCoupon('${c.id}')" class="text-red-400 hover:text-red-300 text-sm">Del</button></td>
+        </tr>`).join('')}
+        </tbody></table>`;
+    }
+
+    async function saveSettings() {
+      const aiKey = document.getElementById('ai-key').value;
+      const stripeKey = document.getElementById('stripe-key').value;
+      const proPrice = document.getElementById('stripe-pro-price').value;
+      await api('/settings', { method: 'PUT', body: JSON.stringify({ ai_openrouter_key: aiKey, stripe_secret_key: stripeKey, stripe_price_pro: proPrice }) });
+      alert('Settings saved!');
+    }
+
+    async function editUser(id) {
+      const plan = prompt('Plan (free/pro/business):');
+      if (!plan) return;
+      const role = prompt('Role (user/admin):');
+      await api('/users/' + id, { method: 'PUT', body: JSON.stringify({ plan, role }) });
+      loadUsers();
+    }
+
+    async function regenerateKey(id) {
+      const data = await api('/users/' + id + '/regenerate-key', { method: 'POST' });
+      if (data) { alert('New key: ' + data.api_key); loadUsers(); }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Hapus user ini?')) return;
+      await api('/users/' + id, { method: 'DELETE' });
+      loadUsers();
+    }
+
+    async function showNewCouponModal() {
+      const code = prompt('Coupon code:');
+      if (!code) return;
+      await api('/coupons', { method: 'POST', body: JSON.stringify({ code, discount_type: 'percent', discount_value: 20, max_uses: 100 }) });
+      loadCoupons();
+    }
+
+    async function deleteCoupon(id) {
+      if (!confirm('Hapus coupon ini?')) return;
+      await api('/coupons/' + id, { method: 'DELETE' });
+      loadCoupons();
+    }
+
+    function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/login.html'; }
+
+    window.onload = async () => { await loadDashboard(); await loadUsers(); await loadCoupons(); switchTab(0); };
+  </script>
+</body>
+</html>

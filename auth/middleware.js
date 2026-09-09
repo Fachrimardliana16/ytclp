@@ -25,7 +25,15 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// Admin auth: blocks if not admin
+function requireAdmin(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: 'Login dulu' });
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Akses admin diperlukan' });
+  next();
+}
+
 // Optional auth: continues even without user
 function optionalAuth(req, res, next) { next(); }
 
-module.exports = { authMiddleware, requireAuth, optionalAuth };
+module.exports = { authMiddleware, requireAuth, optionalAuth, requireAdmin };
+

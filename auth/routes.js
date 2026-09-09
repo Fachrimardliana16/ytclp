@@ -18,12 +18,15 @@ router.post('/register', async (req, res) => {
     if (existing) return res.status(409).json({ error: 'Email sudah terdaftar' });
 
     const apiKey = 'yc_' + require('crypto').randomBytes(24).toString('hex');
+    const existingUsers = await db.getAll('users', 1);
+    const isFirstUser = existingUsers.length === 0;
     const user = await db.insert('users', {
       email,
       name: name || email.split('@')[0],
       password_hash: hashPassword(password),
-      plan: 'free',
-      credits: 10,
+      plan: isFirstUser ? 'pro' : 'free',
+      role: isFirstUser ? 'admin' : 'user',
+      credits: isFirstUser ? 100 : 10,
       credits_used: 0,
       api_key: apiKey,
     });
@@ -56,7 +59,6 @@ router.post('/login', async (req, res) => {
       user.credits = newCredits;
     }
 
-    const token = signJWT({ sub: user.id, email: user.email });
     res.json({ token, user: { id: user.id, email: user.email, name: user.name, plan: user.plan, credits: user.credits } });
   } catch (err) {
     console.error('Login error:', err.message);
@@ -69,7 +71,7 @@ router.get('/me', requireAuth, async (req, res) => {
   try {
     const user = await db.findById('users', req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ id: user.id, email: user.email, name: user.name, plan: user.plan, credits: user.credits, credits_used: user.credits_used, credits_reset_at: user.credits_reset_at, created_at: user.created_at });
+    res.json({ id: user.id, email: user.email, name: user.name, plan: user.plan, role: user.role || 'user', credits: user.credits, credits_used: user.credits_used, credits_reset_at: user.credits_reset_at, api_key: user.api_key || null, created_at: user.created_at });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

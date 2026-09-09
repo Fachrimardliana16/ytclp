@@ -37,7 +37,11 @@ function rateLimiter(req, res, next) {
   if (e.count > 30) return res.status(429).json({ error: 'Terlalu banyak request' });
   next();
 }
-app.use('/api/', rateLimiter);
+app.use('/api/', (req, res, next) => {
+  // Admin API: lebih longgar (dashboard butuh banyak request, sudah dilindungi requireAdmin)
+  if (req.path.startsWith('/api/admin')) return next();
+  return rateLimiter(req, res, next);
+});
 
 // ===== CORS =====
 app.use((req, res, next) => {
@@ -57,6 +61,7 @@ const aiRoutes = require('./ai/routes');
 const templateRoutes = require('./templates/routes');
 const analyticsRoutes = require('./analytics/routes');
 const apiRoutes = require('./api/routes');
+const adminRoutes = require('./admin/routes');
 app.use(authMiddleware); // must be BEFORE auth routes
 app.use('/api/auth', authRoutes);
 app.use('/api/payment', paymentRoutes);
@@ -65,6 +70,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/v1', apiRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ===== Transcript cache (avoids re-fetching same video) =====
 const transcriptCache = new Map(); // videoId -> {segments, title, ts}
@@ -332,6 +338,16 @@ function processClip(job, { portrait = false, withSubs = false, audioCodec = 'co
   const destFile = path.join(userDownloads, fileName);
   const done = () => { if (job._release) job._release(); };
 
+  // Sync clip record status ke DB (fix UAT#5: history/analytics dashboard)
+  async function syncClip(status, extra = {}) {
+    try {
+      if (job.clip_id) {
+        const db = require('./db');
+        await db.update('clips', job.clip_id, { status, ...extra });
+      }
+    } catch (e) { console.error('clip sync error:', e.message); }
+  }
+
   const useOverlay = withSubs && hasDrawtext;
   const useSubs = withSubs && hasSubtitles;
   const useWatermark = watermark && hasDrawtext;
@@ -352,13 +368,13 @@ function processClip(job, { portrait = false, withSubs = false, audioCodec = 'co
     }
     const ffCmd = buildFfmpegCmd(srcFile, destFile, { filters, srtFile: useSrt, portrait, audioCodec });
     job.progress = 60;
-    exec(ffCmd, { timeout: 120000 }, (err2) => {
+    exec(ffCmd, { timeout: 120000 }, async (err2) => {
       try { fs.unlinkSync(srcFile); } catch {} try { fs.unlinkSync(srtFile); } catch {}
-      if (err2) { job.status = 'failed'; job.error = 'Export gagal: ' + err2.message; done(); return; }
+      if (err2) { job.status = 'failed'; job.error = 'Export gagal: ' + err2.message; await syncClip('failed'); done(); return; }
       job.progress = 90; job.status = 'rendering';
-      setTimeout(() => { job.progress = 100; job.status = 'completed'; job.fileName = fileName; job.filePath = destFile; done(); }, 300);
+      setTimeout(async () => { job.progress = 100; job.status = 'completed'; job.fileName = fileName; job.filePath = destFile; await syncClip('completed', { file_url: destFile, file_size: fs.existsSync(destFile) ? fs.statSync(destFile).size : 0 }); done(); }, 300);
     });
-  }).catch(err => { job.status = 'failed'; job.error = err.message; done(); });
+  }).catch(async err => { job.status = 'failed'; job.error = err.message; await syncClip('failed'); done(); });
 }
 
 app.post('/api/job/start', async (req, res) => {
@@ -393,6 +409,22 @@ app.post('/api/job/start', async (req, res) => {
   const isFree = !req.user || (req.user && (!req.user.plan || req.user.plan === 'free'));
   const job = newJob('download', { videoId, start, end, title, transcript: req.body.transcript || [] });
   job._release = releaseJob;
+
+  // Persist clip record agar history/analytics terisi (fix UAT#5)
+  if (req.user) {
+    try {
+      const db = require('./db');
+      const clip = await db.insert('clips', {
+        user_id: req.user.id,
+        start_time: start, end_time: end, title,
+        status: 'exporting',
+        format: portrait ? 'portrait' : 'landscape',
+        with_subtitles: withSubs,
+      });
+      job.clip_id = clip.id;
+    } catch (e) { console.error('clip insert error:', e.message); }
+  }
+
   processClip(job, { portrait, withSubs, audioCodec: portrait ? 'aac' : 'copy', watermark: isFree });
   res.json({ jobId: job.id, status: job.status });
 });

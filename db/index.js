@@ -31,6 +31,10 @@ class MemStore {
     for (const row of this._table(table).values()) { if (row[field] === value) { rows.push(row); if (rows.length >= limit) break; } }
     return rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }
+  getAll(table, limit = 1000) {
+    const rows = [...this._table(table).values()];
+    return rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, limit);
+  }
   remove(table, id) { this._table(table).delete(id); }
   count(table, field, value) {
     let c = 0;
@@ -114,6 +118,14 @@ async function remove(table, id) {
   return query(`DELETE FROM ${table} WHERE id=$1`, [id]);
 }
 
+// List all rows (admin: list users, coupons, etc)
+async function getAll(table, limit = 1000) {
+  const p = getPool();
+  if (!p) return getMemStore().getAll(table, limit);
+  const result = await query(`SELECT * FROM ${table} ORDER BY created_at DESC LIMIT $1`, [limit]);
+  return result.rows;
+}
+
 async function count(table, field, value) {
   const p = getPool();
   if (!p) return getMemStore().count(table, field, value);
@@ -123,4 +135,5 @@ async function count(table, field, value) {
 
 async function close() { if (pool) { await pool.end(); pool = null; } }
 
-module.exports = { query, queryOne, insert, update, findById, findBy, findMany, remove, count, close };
+module.exports = { query, queryOne, insert, update, findById, findBy, findMany, remove, count, getAll, close };
+
